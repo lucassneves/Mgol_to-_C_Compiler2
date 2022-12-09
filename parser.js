@@ -20,6 +20,6 @@ const palavrasReservadas = [
   {classe: 'inteiro', lexema: 'inteiro', tipo: 'inteiro'},
   {classe: 'literal', lexema: 'literal', tipo: 'literal'},
   {classe: 'real', lexema: 'real', tipo: 'real'},
-]
+];
 
 const tabelaSimbolos = palavrasReservadas;
