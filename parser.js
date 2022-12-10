@@ -41,18 +41,36 @@ const digitos = [
 
 const scanner = (simbolo, estado) => {
   switch (estado) {
+    case 1:
+      return {Classe: 'VIR', Lexema: ',', Tipo: 'Vírgula'};      
+    case 2:
+      return {Classe: 'PT_V', Lexema: ';', Tipo: 'Ponto e vírgula'};
+    case 3:
+      return {Classe: 'AB_P', Lexema: '(', Tipo: 'Abre Parênteses'};
+    case 4:
+      return {Classe: 'FC_P', Lexema: ')', Tipo: 'Fecha Parênteses'};
+    case 5:
+        return {Classe: 'OPA', Lexema: simbolo, Tipo: 'Operadores aritméticos'}; 
+    // case 6:
+    //   return {Classe: 'Comentário', Lexema: '{.}', Tipo: 'ND'};
+    case 8:
+      return {Classe: 'Lit', Lexema: simbolo, Tipo: 'Constante literal'};
     case 10:
       // vou consertar
       if (!tabelaSimbolos.includes(token => token.Lexema === simbolo)) {
         tabelaSimbolos.push({Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'});
       }
       return {Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'};
-    case 2:
-      return {Classe: 'PT_V', Lexema: ';', Tipo: 'Ponto e vírgula'};
-    case 1:
-      return {Classe: 'VIR', Lexema: ',', Tipo: 'Vírgula'};
+    case 11:
+      return {Classe: 'EOF', Lexema: 'EOF', Tipo: 'Final de Arquivo'};
+      //return {Classe: '$', Lexema: 'EOF', Tipo: 'Final de Arquivo'};
+    case 12:
+      return {Classe: 'OPR', Lexema: simbolo, Tipo: 'Operadores relacionais'};
+    case 14:
+      return {Classe: 'ATR', Lexema: '<-', Tipo: 'Atribuição'};
+    
     default:
-      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};  
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
   }
 };
 
@@ -75,19 +93,61 @@ const adicionaToken = (token) => {
 }
 
 do {
-
   if (letras.includes(ch)) { // se letra caso 10
-    while (letras.includes(ch) || digitos.includes(ch) || ch === '_') {
+    while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
       simbolo = simbolo.concat(ch);
       avançaCursor();
     }
+    simbolo = simbolo.concat(ch);
     adicionaToken(scanner(simbolo, 10));
     simbolo = '';
   } else if (ch === ';') { // se ; caso 2
-    adicionaToken(scanner(simbolo, 2));
+    adicionaToken(scanner(ch, 2));
   } else if (ch === ',') {
-    adicionaToken(scanner(simbolo, 1));
+    adicionaToken(scanner(ch, 1));
+  } else if (ch === '{') {
+    while (ch !== '}') {
+      simbolo = simbolo.concat(ch);
+      avançaCursor();
+    }
+    //adicionaToken(scanner(simbolo, 6));
+    //Tokens não devem ser gerados para comentários, apenas reconhecidos
+    simbolo = '';
+  } else if (ch === '"') {
+    simbolo = simbolo.concat(ch);
+    do {
+      avançaCursor();
+      simbolo = simbolo.concat(ch);
+    }while(ch !== '"');
+    avançaCursor();
+    adicionaToken(scanner(simbolo, 8));
+    simbolo = '';
+  } else if (ch === '(') {
+    adicionaToken(scanner(ch, 3));
+  } else if (ch === ')') {
+    adicionaToken(scanner(ch, 4));
+  } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
+    adicionaToken(scanner(ch, 5));
+  } else if (ch === 'EOF') {                  //!!Requer aternção!!
+    adicionaToken(scanner(ch, 11)); 
+  } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<'){
+    if (ch === '<'){
+      if (prox === '-')
+        adicionaToken(scanner(ch+prox, 14));  //Atribuição '<-'
+      else if (prox === '>'||prox === '=')
+        adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '<>' ou '<='
+      else
+        adicionaToken(scanner(ch, 12));       //Operador Relacional '<'
+    } else{ 
+      if (prox === '=')
+        adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '>='
+      else
+        adicionaToken(scanner(ch, 12));       //Operador Relacional '>'
+    }
+      
+
   }
+  
   avançaCursor();
 } while (prox !== undefined);
 

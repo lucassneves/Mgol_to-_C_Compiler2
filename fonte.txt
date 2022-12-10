@@ -1,6 +1,6 @@
 inicio
   varinicio
-    literal A;
+    "literal A";
     inteiro B, D, E;
     real C ;
   varfim;
@@ -29,4 +29,4 @@ inicio
   escreva C;
   escreva "\n";
   escreva A;
-fim 
+fim
