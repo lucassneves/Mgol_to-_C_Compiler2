@@ -50,25 +50,22 @@ const scanner = (simbolo, estado) => {
     case 4:
       return {Classe: 'FC_P', Lexema: ')', Tipo: 'Fecha Parênteses'};
     case 5:
-        return {Classe: 'OPA', Lexema: simbolo, Tipo: 'Operadores aritméticos'}; 
+      return {Classe: 'OPA', Lexema: simbolo, Tipo: 'Operadores aritméticos'}; 
     // case 6:
     //   return {Classe: 'Comentário', Lexema: '{.}', Tipo: 'ND'};
     case 8:
       return {Classe: 'Lit', Lexema: simbolo, Tipo: 'Constante literal'};
     case 10:
-      // vou consertar
-      if (!tabelaSimbolos.includes(token => token.Lexema === simbolo)) {
+      if (!tabelaSimbolos.find(token => token.Lexema === simbolo)) {
         tabelaSimbolos.push({Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'});
       }
       return {Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'};
     case 11:
-      return {Classe: 'EOF', Lexema: 'EOF', Tipo: 'Final de Arquivo'};
-      //return {Classe: '$', Lexema: 'EOF', Tipo: 'Final de Arquivo'};
+      return {Classe: 'EOF', Lexema: simbolo, Tipo: 'Final de Arquivo'};
     case 12:
       return {Classe: 'OPR', Lexema: simbolo, Tipo: 'Operadores relacionais'};
     case 14:
       return {Classe: 'ATR', Lexema: '<-', Tipo: 'Atribuição'};
-    
     default:
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
   }
@@ -92,7 +89,16 @@ const adicionaToken = (token) => {
   avançaCursor(); // ao adicionar um token, avança cursor
 }
 
+const finalizaArquivo = (prox) => {
+  if (prox === undefined) {
+    adicionaToken(scanner(prox, 11));
+    console.table(tabelaTokens);
+    console.table(tabelaSimbolos);
+  }
+}
+
 do {
+
   if (letras.includes(ch)) { // se letra caso 10
     while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
       simbolo = simbolo.concat(ch);
@@ -118,8 +124,7 @@ do {
     do {
       avançaCursor();
       simbolo = simbolo.concat(ch);
-    }while(ch !== '"');
-    avançaCursor();
+    } while (ch !== '"');
     adicionaToken(scanner(simbolo, 8));
     simbolo = '';
   } else if (ch === '(') {
@@ -128,29 +133,30 @@ do {
     adicionaToken(scanner(ch, 4));
   } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
     adicionaToken(scanner(ch, 5));
-  } else if (ch === 'EOF') {                  //!!Requer aternção!!
-    adicionaToken(scanner(ch, 11)); 
-  } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<'){
-    if (ch === '<'){
-      if (prox === '-')
+  } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
+    if (ch === '<') { 
+      if (prox === '-') {
         adicionaToken(scanner(ch+prox, 14));  //Atribuição '<-'
-      else if (prox === '>'||prox === '=')
+        avançaCursor();
+      }
+      else if (prox === '>'||prox === '=') {
         adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '<>' ou '<='
+        avançaCursor();
+      }
       else
         adicionaToken(scanner(ch, 12));       //Operador Relacional '<'
-    } else{ 
-      if (prox === '=')
+    } else { 
+      if (prox === '=') {
         adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '>='
+        avançaCursor();
+      }
       else
         adicionaToken(scanner(ch, 12));       //Operador Relacional '>'
     }
-      
-
+  } else {
+    avançaCursor();
   }
-  
-  avançaCursor();
+
+  finalizaArquivo(prox);
+
 } while (prox !== undefined);
-
-console.log('tabela tokens:', tabelaTokens, 'tabela simbolos:', tabelaSimbolos);
-
-
