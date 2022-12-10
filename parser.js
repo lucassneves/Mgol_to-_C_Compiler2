@@ -1,28 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-
-// const nomeArquivoSelecionado = 'fonte.txt';
-const nomeArquivoSelecionado = 'numeros.txt';
+const nomeArquivoSelecionado = 'fonte.txt';
+// const nomeArquivoSelecionado = 'numeros.txt';
 const filepath = path.join(process.cwd(), nomeArquivoSelecionado);
-
 const conteudoArquivoSelecionado = fs.readFileSync(filepath, 'utf8');
+const palavrasReservadas = require('./palavrasReservadas');
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const palavrasReservadas = [
-  {Classe: 'inicio', Lexema: 'inicio', Tipo: 'inicio'},
-  {Classe: 'varinicio', Lexema: 'varinicio', Tipo: 'varinicio'},
-  {Classe: 'varfim', Lexema: 'varfim', Tipo: 'varfim'},
-  {Classe: 'escreva', Lexema: 'escreva', Tipo: 'escreva'},
-  {Classe: 'leia', Lexema: 'leia', Tipo: 'leia'},
-  {Classe: 'se', Lexema: 'se', Tipo: 'se'},
-  {Classe: 'entao', Lexema: 'entao', Tipo: 'entao'},
-  {Classe: 'fimse', Lexema: 'fimse', Tipo: 'fimse'},
-  {Classe: 'fim', Lexema: 'fim', Tipo: 'fim'},
-  {Classe: 'inteiro', Lexema: 'inteiro', Tipo: 'inteiro'},
-  {Classe: 'literal', Lexema: 'literal', Tipo: 'literal'},
-  {Classe: 'real', Lexema: 'real', Tipo: 'real'},
-];
 
 const tabelaSimbolos = palavrasReservadas;
 const tabelaTokens = [];
@@ -52,8 +36,8 @@ const scanner = (simbolo, estado) => {
       return {Classe: 'FC_P', Lexema: ')', Tipo: 'Fecha Parênteses'};
     case 5:
       return {Classe: 'OPA', Lexema: simbolo, Tipo: 'Operadores aritméticos'}; 
-    // case 6:
-    //   return {Classe: 'Comentário', Lexema: '{.}', Tipo: 'ND'};
+////case 6:
+////  return {Classe: 'Comentário', Lexema: '{.}', Tipo: 'ND'};
     case 8:
       return {Classe: 'Lit', Lexema: simbolo, Tipo: 'Constante literal'};
     case 10:
@@ -86,10 +70,9 @@ const scanner = (simbolo, estado) => {
 
 // posicionamento
 let cursor = 0;
-let simbolo = '';
 let linha = 0;
 let coluna = 0;
-
+let simbolo = '';
 let ch = conteudoArquivoSelecionado[cursor];
 let prox = conteudoArquivoSelecionado[cursor + 1];
 
@@ -125,12 +108,6 @@ const concatenaEAvança = (ch) => {
 }
 
 
-const avançaEConcatena = (ch) => {
-  processaCaracter(ch);
-  avançaCursorEAtualizaCaracter();
-}
-
-
 const adicionaToken = (token) => {
   tabelaTokens.push(token);
   reiniciaSimbolo();
@@ -144,118 +121,123 @@ const adicionaTokenEAvança = (token) => {
 }
 
 
+const printTables = () => {
+  console.table(tabelaTokens);
+  console.table(tabelaSimbolos);
+}
+
+
 const finalizaArquivo = (prox) => {
   if (prox === undefined) {
     adicionaTokenEAvança(scanner(prox, 11));
-
-    console.table(tabelaTokens);
-    console.table(tabelaSimbolos);
+    printTables();
   }
 }
 
 
-do {
-
-  if (digitos.includes(ch)) {
-    concatenaEAvança(ch);
-
-    while (digitos.includes(ch)) {
+const parser = () => {
+  do {
+    if (digitos.includes(ch)) {
       concatenaEAvança(ch);
-    }
-
-    if (ch !== '.' && ch !== 'e' && ch !== 'E') {
-      adicionaTokenEAvança(scanner(simbolo, 16));
-    } else {
-      if (ch === 'e' || ch === 'E') {
+      while (digitos.includes(ch)) {
         concatenaEAvança(ch);
-        if (ch === '+' || ch === '-') {
+      }
+      if (ch !== '.' && ch !== 'e' && ch !== 'E') {
+        adicionaToken(scanner(simbolo, 16));
+      } else {
+        if (ch === 'e' || ch === 'E') {
           concatenaEAvança(ch);
-          if (!digitos.includes(ch)) {
-            adicionaToken(scanner(simbolo, 97));
+          if (ch === '+' || ch === '-') {
+            concatenaEAvança(ch);
+            if (!digitos.includes(ch)) {
+              adicionaToken(scanner(simbolo, 97));
+            } else {
+              while (digitos.includes(ch)) {
+                concatenaEAvança(ch);
+              }
+              adicionaTokenEAvança(scanner(simbolo, 21));
+            }
+          } else if (!digitos.includes(ch)) {
+            adicionaTokenEAvança(scanner(simbolo, 98));
           } else {
             while (digitos.includes(ch)) {
               concatenaEAvança(ch);
             }
             adicionaTokenEAvança(scanner(simbolo, 21));
           }
-        } else if (!digitos.includes(ch)) {
-          adicionaTokenEAvança(scanner(simbolo, 98));
-        } else {
-          while (digitos.includes(ch)) {
-            concatenaEAvança(ch);
+        }
+        if (ch === '.') {
+          concatenaEAvança(ch);
+          if (!digitos.includes(ch)) {
+            adicionaTokenEAvança(scanner(simbolo, 99));
+          } else {
+            while (digitos.includes(ch)) {
+              concatenaEAvança(ch);
+            }
+            adicionaTokenEAvança(scanner(simbolo, 18));
           }
-          adicionaTokenEAvança(scanner(simbolo, 21));
         }
       }
-      if (ch === '.') {
+    
+    } else if (letras.includes(ch)) { // se letra caso 10
+      while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
         concatenaEAvança(ch);
-        if (!digitos.includes(ch)) {
-          adicionaTokenEAvança(scanner(simbolo, 99));
-        } else {
-          while (digitos.includes(ch)) {
-            concatenaEAvança(ch);
-          }
-          adicionaTokenEAvança(scanner(simbolo, 18));
-        }
       }
+      simbolo = simbolo.concat(ch);
+      adicionaTokenEAvança(scanner(simbolo, 10));
+    } else if (ch === ';') { // se ; caso 2
+      adicionaTokenEAvança(scanner(ch, 2));
+    } else if (ch === ',') {
+      adicionaTokenEAvança(scanner(ch, 1));
+    } else if (ch === '{') {
+  
+      while (ch !== '}') {
+        concatenaEAvança(ch);
+      }
+      if (ch === '}') {
+        avançaCursorEAtualizaCaracter();
+        reiniciaSimbolo();
+      }
+  
+    } else if (ch === '"') {
+      concatenaEAvança(ch);
+      while (ch !== '"') {
+        concatenaEAvança(ch);
+      }
+      concatenaEAvança(ch);
+      adicionaToken(scanner(simbolo, 8));
+    } else if (ch === '(') {
+      adicionaTokenEAvança(scanner(ch, 3));
+    } else if (ch === ')') {
+      adicionaTokenEAvança(scanner(ch, 4));
+    } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
+      adicionaTokenEAvança(scanner(ch, 5));
+    } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
+      if (ch === '<') { 
+        if (prox === '-') {
+          adicionaTokenEAvança(scanner(ch+prox, 14));  //Atribuição '<-'
+          avançaCursorEAtualizaCaracter();
+        }
+        else if (prox === '>'||prox === '=') {
+          adicionaTokenEAvança(scanner(ch+prox, 12));  //Operador Relacional '<>' ou '<='
+          avançaCursorEAtualizaCaracter();
+        }
+        else
+          adicionaTokenEAvança(scanner(ch, 12));       //Operador Relacional '<'
+      } else { 
+        if (prox === '=') {
+          adicionaTokenEAvança(scanner(ch+prox, 12));  //Operador Relacional '>='
+          avançaCursorEAtualizaCaracter();
+        }
+        else
+          adicionaTokenEAvança(scanner(ch, 12));       //Operador Relacional '>'
+      }
+    } else {
+      avançaCursorEAtualizaCaracter();
     }
   
-  } else if (letras.includes(ch)) { // se letra caso 10
-    while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
-      concatenaEAvança(ch);
-    }
-    simbolo = simbolo.concat(ch);
-    adicionaTokenEAvança(scanner(simbolo, 10));
-  } else if (ch === ';') { // se ; caso 2
-    adicionaTokenEAvança(scanner(ch, 2));
-  } else if (ch === ',') {
-    adicionaTokenEAvança(scanner(ch, 1));
-  } else if (ch === '{') {
+    finalizaArquivo(prox);
+  } while (prox !== undefined);
+}
 
-    while (ch !== '}') {
-      concatenaEAvança(ch);
-    }
-    if (ch === '}') {
-      avançaCursorEAtualizaCaracter();
-      reiniciaSimbolo();
-    }
-
-  } else if (ch === '"') {
-    avançaEConcatena(ch);
-    while (ch !== '"') {
-      avançaEConcatena(ch);
-    }
-    avançaEConcatena(ch);
-    adicionaTokenEAvança(scanner(simbolo, 8));
-  } else if (ch === '(') {
-    adicionaTokenEAvança(scanner(ch, 3));
-  } else if (ch === ')') {
-    adicionaTokenEAvança(scanner(ch, 4));
-  } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
-    adicionaTokenEAvança(scanner(ch, 5));
-  } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
-    if (ch === '<') { 
-      if (prox === '-') {
-        adicionaTokenEAvança(scanner(ch+prox, 14));  //Atribuição '<-'
-        avançaCursorEAtualizaCaracter();
-      }
-      else if (prox === '>'||prox === '=') {
-        adicionaTokenEAvança(scanner(ch+prox, 12));  //Operador Relacional '<>' ou '<='
-        avançaCursorEAtualizaCaracter();
-      }
-      else
-        adicionaTokenEAvança(scanner(ch, 12));       //Operador Relacional '<'
-    } else { 
-      if (prox === '=') {
-        adicionaTokenEAvança(scanner(ch+prox, 12));  //Operador Relacional '>='
-        avançaCursorEAtualizaCaracter();
-      }
-      else
-        adicionaTokenEAvança(scanner(ch, 12));       //Operador Relacional '>'
-    }
-  } else {
-    avançaCursorEAtualizaCaracter();
-  }
-
-  finalizaArquivo(prox);
-} while (prox !== undefined);
+parser();
