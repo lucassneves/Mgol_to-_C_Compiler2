@@ -88,7 +88,6 @@ do {
   } else if (ch === ',') {
     adicionaToken(scanner(simbolo, 1));
   }
-
   avançaCursor();
 } while (prox !== undefined);
 
