@@ -1,8 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+
 const nomeArquivoSelecionado = 'fonte.txt';
-//const nomeArquivoSelecionado = 'numeros.txt';
+// const nomeArquivoSelecionado = 'numeros.txt';
 //const nomeArquivoSelecionado = 'exemplo.txt';
+
 const filepath = path.join(process.cwd(), nomeArquivoSelecionado);
 const conteudoArquivoSelecionado = fs.readFileSync(filepath, 'utf8');
 
@@ -17,12 +19,11 @@ const digitos = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const tabelaSimbolos = palavrasReservadas;
 const tabelaTokens = [];
 
-
 let cursor = 0;
 let linha = 1;
-let posicaoLinhaAnterior = 0;
-let posicaoColunaAnterior = 0;
-let coluna = 0;
+let coluna = 1;
+let posicaoLinhaAnterior;
+let posicaoColunaAnterior;
 let simbolo = '';
 let ch = conteudoArquivoSelecionado[cursor];
 let prox = conteudoArquivoSelecionado[cursor + 1];
@@ -59,34 +60,29 @@ const scanner = (simbolo, estado) => {
     case 16:  
       return {Classe: 'Num', Lexema: simbolo, Tipo: 'Inteiro'};
     case 18:  
-      return {Classe: 'Num', Lexema: simbolo, Tipo: 'Float'};
+      return {Classe: 'Num', Lexema: simbolo, Tipo: 'Real'};
     case 21:  
-      return {Classe: 'Num', Lexema: simbolo, Tipo: 'Notação Científica'};
+      return simbolo.search(ch => ch === '.') === -1 ? {Classe: 'Num', Lexema: simbolo, Tipo: 'Inteiro'} : {Classe: 'Num', Lexema: simbolo, Tipo: 'Real'};
     case 94:  
-      console.log('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[0] +`, linha: ${linha}, coluna: ${coluna}`);
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[0] +`, linha: ${linha}, coluna: ${coluna}`);
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
     case 95:
-      console.log('ERRO LÉXICO: "EOF",',listaDeErros[1] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
+      console.error('ERRO LÉXICO: "EOF",',listaDeErros[1] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
-      //return {Classe: 'ERRO', Lexema: simbolo, Tipo: listaDeErros[1] +`, linha: ${linha}, coluna: ${coluna}`}; 
     case 96:
-      console.log('ERRO LÉXICO: "EOF",',listaDeErros[2] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
+      console.error('ERRO LÉXICO: "EOF",',listaDeErros[2] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
-      //return {Classe: 'ERRO', Lexema: simbolo, Tipo: listaDeErros[2] +`, linha: ${linha}, coluna: ${coluna}`};  
     case 97:
-      console.log('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[3] +`, linha: ${linha}, coluna: ${coluna}`);
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[3] +`, linha: ${linha}, coluna: ${coluna}`);
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
-      //return {Classe: 'ERRO', Lexema: simbolo, Tipo: listaDeErros[3] +`, linha: ${linha}, coluna: ${coluna}`};  
     case 98:
-      console.log('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[4] +`, linha: ${linha}, coluna: ${coluna}`); 
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[4] +`, linha: ${linha}, coluna: ${coluna}`); 
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
-      //return {Classe: 'ERRO', Lexema: simbolo, Tipo: listaDeErros[4] +`, linha: ${linha}, coluna: ${coluna}`};  
     case 99:
-      console.log('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[5] +`, linha: ${linha}, coluna: ${coluna}`); 
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[5] +`, linha: ${linha}, coluna: ${coluna}`); 
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
-      //return {Classe: 'ERRO', Lexema: simbolo, Tipo: listaDeErros[5] +`, linha: ${linha}, coluna: ${coluna}`};  
     default:
-      console.log('ERRO:',"'"+simbolo+"',",listaDeErros[6] +`, linha: ${linha}, coluna: ${coluna}`); 
+      console.error('ERRO:',"'"+simbolo+"',",listaDeErros[6] +`, linha: ${linha}, coluna: ${coluna}`); 
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
   }
 };
@@ -109,7 +105,7 @@ const avançaCursorEAtualizaCaracter = () => {
 const processaCaracter = (ch) => {
   if (ch === '\n') {
     linha++;
-    coluna = 0;
+    coluna = 1;
   } else {
     coluna++;
   }
@@ -137,11 +133,8 @@ const adicionaTokenEAvança = (token) => {
 }
 
 const printTables = () => {
-  // Printar tabelas apenas em caso de não houver Erros
-  if (!tabelaTokens.find(token => token.Classe === 'ERRO')){
-    console.table(tabelaTokens);
-    console.table(tabelaSimbolos);
-  }
+  console.table(tabelaTokens);
+  console.table(tabelaSimbolos);
 }
 
 const finalizaArquivo = (prox) => {
@@ -161,6 +154,17 @@ const parser = () => {
       if (ch !== '.' && ch !== 'e' && ch !== 'E') {
         adicionaToken(scanner(simbolo, 16));
       } else {
+        if (ch === '.') {
+          concatenaEAvança(ch);
+          if (!digitos.includes(ch)) {
+            adicionaToken(scanner(simbolo, 99));
+          } else {
+            while (digitos.includes(ch)) {
+              concatenaEAvança(ch);
+            }
+            adicionaToken(scanner(simbolo, 18));
+          }
+        }
         if (ch === 'e' || ch === 'E') {
           concatenaEAvança(ch);
           if (ch === '+' || ch === '-') {
@@ -180,17 +184,6 @@ const parser = () => {
               concatenaEAvança(ch);
             }
             adicionaToken(scanner(simbolo, 21));
-          }
-        }
-        if (ch === '.') {
-          concatenaEAvança(ch);
-          if (!digitos.includes(ch)) {
-            adicionaToken(scanner(simbolo, 99));
-          } else {
-            while (digitos.includes(ch)) {
-              concatenaEAvança(ch);
-            }
-            adicionaToken(scanner(simbolo, 18));
           }
         }
       }
@@ -217,7 +210,6 @@ const parser = () => {
         avançaCursorEAtualizaCaracter();
         reiniciaSimbolo();
       }
-
     } else if (ch === '"') {
       posicaoLinhaAnterior = linha;
       posicaoColunaAnterior = coluna;
@@ -265,9 +257,10 @@ const parser = () => {
           ch !== "'" &&   ch !== "?" && ch !== '[' &&       ch !== ']' &&
           ch !== '\r' &&  ch !== ' ' && ch !== '\t' &&      ch !== '\"')
         {
-          adicionaTokenEAvança(scanner(ch, 94)); //Error de Caracter Invalido
-      } else
-        avançaCursorEAtualizaCaracter();
+          adicionaTokenEAvança(scanner(ch, 94));
+        } else {
+          avançaCursorEAtualizaCaracter();
+        }
     }
     finalizaArquivo(prox);
   } while (prox !== undefined);
