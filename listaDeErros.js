@@ -1,9 +1,9 @@
 const listaDeErros = ["Caractere invalido na linguagem",
                       "Comentário nao fechado",
                       "Literal nao fechado",
-                      "Numero terminado em +/-",
-                      "Numero terminado em e/E",
-                      "Numero terminado em .",
+                      "Operacaoo terminado em operador matematico",
+                      "Operação sem numero terminado em e/E",
+                      "Numero flutuante terminado em .",
                       "Falha ao Adicionar Estado no automato",
 ];
 

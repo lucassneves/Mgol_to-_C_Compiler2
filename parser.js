@@ -235,7 +235,11 @@ const parser = () => {
     } else if (ch === ')') {
       adicionaTokenEAvança(scanner(ch, 4));
     } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
-      adicionaTokenEAvança(scanner(ch, 5));
+      adicionaToken(scanner(ch, 5));
+      if (!digitos.includes(prox))
+        adicionaTokenEAvança(scanner(ch, 97));
+      else
+        avançaCursorEAtualizaCaracter();
     } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
       if (ch === '<') { 
         if (prox === '-') {
