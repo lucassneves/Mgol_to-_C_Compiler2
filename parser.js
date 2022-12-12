@@ -1,41 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 
-const nomeArquivoSelecionado = 'fonte.txt';
-const filepath = path.join(process.cwd(), nomeArquivoSelecionado);
+//const nomeArquivoSelecionado = 'fonte.txt';
+const nomeArquivoSelecionado = 'numeros.txt';
 
+const filepath = path.join(process.cwd(), nomeArquivoSelecionado);
 const conteudoArquivoSelecionado = fs.readFileSync(filepath, 'utf8');
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const palavrasReservadas = [
-  {Classe: 'inicio', Lexema: 'inicio', Tipo: 'inicio'},
-  {Classe: 'varinicio', Lexema: 'varinicio', Tipo: 'varinicio'},
-  {Classe: 'varfim', Lexema: 'varfim', Tipo: 'varfim'},
-  {Classe: 'escreva', Lexema: 'escreva', Tipo: 'escreva'},
-  {Classe: 'leia', Lexema: 'leia', Tipo: 'leia'},
-  {Classe: 'se', Lexema: 'se', Tipo: 'se'},
-  {Classe: 'entao', Lexema: 'entao', Tipo: 'entao'},
-  {Classe: 'fimse', Lexema: 'fimse', Tipo: 'fimse'},
-  {Classe: 'fim', Lexema: 'fim', Tipo: 'fim'},
-  {Classe: 'inteiro', Lexema: 'inteiro', Tipo: 'inteiro'},
-  {Classe: 'literal', Lexema: 'literal', Tipo: 'literal'},
-  {Classe: 'real', Lexema: 'real', Tipo: 'real'},
-];
+const palavrasReservadas = require('./palavrasReservadas');
+const letras = require('./letras');
+const listaDeErros = require('./listaDeErros');
+const { Console } = require('console');
+const digitos = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 const tabelaSimbolos = palavrasReservadas;
 const tabelaTokens = [];
 
-const letras = [
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-];
-
-const digitos = [
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-];
+let cursor = 0;
+let linha = 1;
+let coluna = 1;
+let posicaoLinhaAnterior;
+let posicaoColunaAnterior;
+let simbolo = '';
+let ch = conteudoArquivoSelecionado[cursor];
+let prox = conteudoArquivoSelecionado[cursor + 1];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,112 +41,249 @@ const scanner = (simbolo, estado) => {
       return {Classe: 'FC_P', Lexema: ')', Tipo: 'Fecha Parênteses'};
     case 5:
       return {Classe: 'OPA', Lexema: simbolo, Tipo: 'Operadores aritméticos'}; 
-    // case 6:
-    //   return {Classe: 'Comentário', Lexema: '{.}', Tipo: 'ND'};
     case 8:
       return {Classe: 'Lit', Lexema: simbolo, Tipo: 'Constante literal'};
     case 10:
       if (!tabelaSimbolos.find(token => token.Lexema === simbolo)) {
         tabelaSimbolos.push({Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'});
+        return {Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'};
+      } else {
+          return tabelaSimbolos.find(token => token.Lexema === simbolo);
       }
-      return {Classe: 'id', Lexema: simbolo, Tipo: 'Identificador'};
     case 11:
       return {Classe: 'EOF', Lexema: simbolo, Tipo: 'Final de Arquivo'};
     case 12:
       return {Classe: 'OPR', Lexema: simbolo, Tipo: 'Operadores relacionais'};
     case 14:
       return {Classe: 'ATR', Lexema: '<-', Tipo: 'Atribuição'};
+    case 16:  
+      return {Classe: 'Num', Lexema: simbolo, Tipo: 'Inteiro'};
+    case 18:  
+      return {Classe: 'Num', Lexema: simbolo, Tipo: 'Real'};
+    case 21:  
+      return simbolo.search(ch => ch === '.') === -1 ? {Classe: 'Num', Lexema: simbolo, Tipo: 'Inteiro'} : {Classe: 'Num', Lexema: simbolo, Tipo: 'Real'};
+    case 94:  
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[0] +`, linha: ${linha}, coluna: ${coluna}`);
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
+    case 95:
+      console.error('ERRO LÉXICO: "EOF",',listaDeErros[1] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
+    case 96:
+      console.error('ERRO LÉXICO: "EOF",',listaDeErros[2] +`, linha: ${posicaoLinhaAnterior}, coluna: ${posicaoColunaAnterior}`);
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
+    case 97:
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[3] +`, linha: ${linha}, coluna: ${coluna}`);
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
+    case 98:
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[4] +`, linha: ${linha}, coluna: ${coluna}`); 
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
+    case 99:
+      console.error('ERRO LÉXICO:',"'"+simbolo+"',",listaDeErros[5] +`, linha: ${linha}, coluna: ${coluna}`); 
+      return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
     default:
+      console.error('ERRO:',"'"+simbolo+"',",listaDeErros[6] +`, linha: ${linha}, coluna: ${coluna}`); 
       return {Classe: 'ERRO', Lexema: simbolo, Tipo: 'NULO'};
   }
 };
 
-// posicionamento
-let cursor = 0;
-let simbolo = '';
-let ch = conteudoArquivoSelecionado[cursor];
-let prox = conteudoArquivoSelecionado[cursor + 1];
+const reiniciaSimbolo = () => simbolo = '';
 
-// avança cursor e atualiza valor do caracter e do lookahead
-const avançaCursor = () => {
-  cursor++;
+const avançaCursor = () => cursor++;
+
+const atualiza = () => {
   ch = conteudoArquivoSelecionado[cursor];
   prox = conteudoArquivoSelecionado[cursor + 1];
 }
 
+const avançaCursorEAtualizaCaracter = () => {
+  processaCaracter(ch);
+  avançaCursor();
+  atualiza();
+}
+
+const processaCaracter = (ch) => {
+  if (ch === '\n') {
+    linha++;
+    coluna = 1;
+  } else {
+    coluna++;
+  }
+}
+
+const concatenaCaracter = (ch) => {
+  if (ch !== '\n')
+    simbolo = simbolo.concat(ch);
+}
+
+const concatenaEAvança = (ch) => {
+  concatenaCaracter(ch);
+  avançaCursorEAtualizaCaracter();
+}
+
 const adicionaToken = (token) => {
-  tabelaTokens.push(token); // adiciona token à tabela de tokens
-  avançaCursor(); // ao adicionar um token, avança cursor
+  tabelaTokens.push(token);
+  reiniciaSimbolo();
+}
+
+const adicionaTokenEAvança = (token) => {
+  tabelaTokens.push(token);
+  avançaCursorEAtualizaCaracter();
+  reiniciaSimbolo();
+}
+
+const printTables = () => {
+  console.table(tabelaTokens);
+  console.table(tabelaSimbolos);
 }
 
 const finalizaArquivo = (prox) => {
   if (prox === undefined) {
-    adicionaToken(scanner(prox, 11));
-    console.table(tabelaTokens);
-    console.table(tabelaSimbolos);
+    adicionaTokenEAvança(scanner(prox, 11));
+    printTables();
   }
 }
 
-do {
-
-  if (letras.includes(ch)) { // se letra caso 10
-    while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
-      simbolo = simbolo.concat(ch);
-      avançaCursor();
-    }
-    simbolo = simbolo.concat(ch);
-    adicionaToken(scanner(simbolo, 10));
-    simbolo = '';
-  } else if (ch === ';') { // se ; caso 2
-    adicionaToken(scanner(ch, 2));
-  } else if (ch === ',') {
-    adicionaToken(scanner(ch, 1));
-  } else if (ch === '{') {
-    while (ch !== '}') {
-      simbolo = simbolo.concat(ch);
-      avançaCursor();
-    }
-    //adicionaToken(scanner(simbolo, 6));
-    //Tokens não devem ser gerados para comentários, apenas reconhecidos
-    simbolo = '';
-  } else if (ch === '"') {
-    simbolo = simbolo.concat(ch);
-    do {
-      avançaCursor();
-      simbolo = simbolo.concat(ch);
-    } while (ch !== '"');
-    adicionaToken(scanner(simbolo, 8));
-    simbolo = '';
-  } else if (ch === '(') {
-    adicionaToken(scanner(ch, 3));
-  } else if (ch === ')') {
-    adicionaToken(scanner(ch, 4));
-  } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
-    adicionaToken(scanner(ch, 5));
-  } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
-    if (ch === '<') { 
-      if (prox === '-') {
-        adicionaToken(scanner(ch+prox, 14));  //Atribuição '<-'
-        avançaCursor();
+const parser = () => {
+  do {
+    if (digitos.includes(ch)) {
+      concatenaEAvança(ch);
+      while (digitos.includes(ch)) {
+        concatenaEAvança(ch);
       }
-      else if (prox === '>'||prox === '=') {
-        adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '<>' ou '<='
-        avançaCursor();
+      if (ch !== '.' && ch !== 'e' && ch !== 'E') {
+        adicionaToken(scanner(simbolo, 16));
+      } else {
+        if (ch === '.') {
+          concatenaEAvança(ch);
+          if (!digitos.includes(ch)) {
+            adicionaToken(scanner(simbolo, 99));
+          } else {
+            while (digitos.includes(ch)) {
+              concatenaEAvança(ch);
+            }
+            if (ch === 'e' || ch === 'E') {
+              concatenaEAvança(ch);
+              if (ch === '+' || ch === '-') {
+                concatenaEAvança(ch);
+                if (!digitos.includes(ch)) {
+                  adicionaToken(scanner(simbolo, 97));
+                } else {
+                  while (digitos.includes(ch)) {
+                    concatenaEAvança(ch);
+                  }
+                  adicionaToken(scanner(simbolo, 21));
+                }
+              } else if (!digitos.includes(ch)) {
+                adicionaToken(scanner(simbolo, 98));
+              } else {
+                while (digitos.includes(ch)) {
+                  concatenaEAvança(ch);
+                }
+                adicionaToken(scanner(simbolo, 21));
+              }
+            } else
+              adicionaToken(scanner(simbolo, 18));
+          }
+        }
+        if (ch === 'e' || ch === 'E') {
+          concatenaEAvança(ch);
+          if (ch === '+' || ch === '-') {
+            concatenaEAvança(ch);
+            if (!digitos.includes(ch)) {
+              adicionaToken(scanner(simbolo, 97));
+            } else {
+              while (digitos.includes(ch)) {
+                concatenaEAvança(ch);
+              }
+              adicionaToken(scanner(simbolo, 21));
+            }
+          } else if (!digitos.includes(ch)) {
+            adicionaToken(scanner(simbolo, 98));
+          } else {
+            while (digitos.includes(ch)) {
+              concatenaEAvança(ch);
+            }
+            adicionaToken(scanner(simbolo, 21));
+          }
+        }
       }
+    } else if (letras.includes(ch)) {
+      while (letras.includes(prox) || digitos.includes(prox) || prox === '_') {
+        concatenaEAvança(ch);
+      }
+      simbolo = simbolo.concat(ch);
+      adicionaTokenEAvança(scanner(simbolo, 10));
+    } else if (ch === ';') {
+      adicionaTokenEAvança(scanner(ch, 2));
+    } else if (ch === ',') {
+      adicionaTokenEAvança(scanner(ch, 1));
+    } else if (ch === '{') {
+      posicaoLinhaAnterior = linha;
+      posicaoColunaAnterior = coluna;
+      while (ch !== '}' && ch !== undefined) {
+        concatenaEAvança(ch);
+      }
+      if (ch === undefined){
+        adicionaTokenEAvança(scanner(ch, 95));
+      }
+      if (ch === '}') {
+        avançaCursorEAtualizaCaracter();
+        reiniciaSimbolo();
+      }
+    } else if (ch === '"') {
+      posicaoLinhaAnterior = linha;
+      posicaoColunaAnterior = coluna;
+      concatenaEAvança(ch);
+      while (ch !== '"' && ch !== undefined) {
+        concatenaEAvança(ch);
+      }
+      if (ch === undefined){
+        adicionaTokenEAvança(scanner(ch, 96));
+      }
+      concatenaEAvança(ch);
+      adicionaToken(scanner(simbolo, 8));
+    } else if (ch === '(') {
+      adicionaTokenEAvança(scanner(ch, 3));
+    } else if (ch === ')') {
+      adicionaTokenEAvança(scanner(ch, 4));
+    } else if (ch === '+' || ch === '-' || ch === '/' ||ch === '*') {
+      adicionaToken(scanner(ch, 5));
+      if (!digitos.includes(prox))
+        adicionaTokenEAvança(scanner(ch, 97));
       else
-        adicionaToken(scanner(ch, 12));       //Operador Relacional '<'
-    } else { 
-      if (prox === '=') {
-        adicionaToken(scanner(ch+prox, 12));  //Operador Relacional '>='
-        avançaCursor();
+        avançaCursorEAtualizaCaracter();
+    } else if (ch === '>'||ch === '>=' || ch === '='|| ch === '<') {
+      if (ch === '<') { 
+        if (prox === '-') {
+          adicionaTokenEAvança(scanner(ch+prox, 14));
+          avançaCursorEAtualizaCaracter();
+        }
+        else if (prox === '>'||prox === '=') {
+          adicionaTokenEAvança(scanner(ch+prox, 12));
+          avançaCursorEAtualizaCaracter();
+        }
+        else
+          adicionaTokenEAvança(scanner(ch, 12));
+      } else { 
+        if (prox === '=') {
+          adicionaTokenEAvança(scanner(ch+prox, 12));
+          avançaCursorEAtualizaCaracter();
+        }
+        else
+          adicionaTokenEAvança(scanner(ch, 12));
       }
-      else
-        adicionaToken(scanner(ch, 12));       //Operador Relacional '>'
+    } else {
+      if (ch !== '\n' &&  ch !== ':' && ch !== undefined && ch !== "!" && 
+          ch !== "'" &&   ch !== "?" && ch !== '[' &&       ch !== ']' &&
+          ch !== '\r' &&  ch !== ' ' && ch !== '\t' &&      ch !== '\"')
+        {
+          adicionaTokenEAvança(scanner(ch, 94));
+        } else {
+          avançaCursorEAtualizaCaracter();
+        }
     }
-  } else {
-    avançaCursor();
-  }
+    finalizaArquivo(prox);
+  } while (prox !== undefined);
+}
 
-  finalizaArquivo(prox);
-
-} while (prox !== undefined);
+parser();
