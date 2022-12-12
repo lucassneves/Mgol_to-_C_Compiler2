@@ -1,9 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const nomeArquivoSelecionado = 'fonte.txt';
-// const nomeArquivoSelecionado = 'numeros.txt';
-//const nomeArquivoSelecionado = 'exemplo.txt';
+//const nomeArquivoSelecionado = 'fonte.txt';
+const nomeArquivoSelecionado = 'numeros.txt';
 
 const filepath = path.join(process.cwd(), nomeArquivoSelecionado);
 const conteudoArquivoSelecionado = fs.readFileSync(filepath, 'utf8');
@@ -162,7 +161,28 @@ const parser = () => {
             while (digitos.includes(ch)) {
               concatenaEAvança(ch);
             }
-            adicionaToken(scanner(simbolo, 18));
+            if (ch === 'e' || ch === 'E') {
+              concatenaEAvança(ch);
+              if (ch === '+' || ch === '-') {
+                concatenaEAvança(ch);
+                if (!digitos.includes(ch)) {
+                  adicionaToken(scanner(simbolo, 97));
+                } else {
+                  while (digitos.includes(ch)) {
+                    concatenaEAvança(ch);
+                  }
+                  adicionaToken(scanner(simbolo, 21));
+                }
+              } else if (!digitos.includes(ch)) {
+                adicionaToken(scanner(simbolo, 98));
+              } else {
+                while (digitos.includes(ch)) {
+                  concatenaEAvança(ch);
+                }
+                adicionaToken(scanner(simbolo, 21));
+              }
+            } else
+              adicionaToken(scanner(simbolo, 18));
           }
         }
         if (ch === 'e' || ch === 'E') {
