@@ -13,40 +13,6 @@ const palavrasReservadas = require('./palavrasReservadas');
 const letras = require('./letras');
 const listaDeErros = require('./listaDeErros');
 const digitos = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const regrasGramaticais = new Map([
-  [1, { regra: `P' -> P`}],
-  [2, { regra: `P -> inicio V A`}],
-  [3, { regra: `V -> varinicio LV`}],
-  [4, { regra: `LV -> D LV`}],
-  [5, { regra: `LV -> varfim pt_v`}],
-  [6, { regra: `D -> TIPO L pt_v`}],
-  [7, { regra: `L -> id vir L`}],
-  [8, { regra: `L -> id`}],
-  [9, { regra: `TIPO -> inteiro`}],
-  [10, { regra: `TIPO -> real`}],
-  [11, { regra: `TIPO -> literal`}],
-  [12, { regra: `A -> ES A`}],
-  [13, { regra: `ES -> leia id pt_v`}],
-  [14, { regra: `ES -> escreva ARG pt_v`}],
-  [15, { regra: `ARG -> lit`}],
-  [16, { regra: `ARG -> num`}],
-  [17, { regra: `ARG -> id`}],
-  [18, { regra: `A -> CMD A`}],
-  [19, { regra: `CMD -> id atr LD pt_v`}],
-  [20, { regra: `LD -> OPRD opa OPRD`}],
-  [21, { regra: `LD -> OPRD`}],
-  [22, { regra: `OPRD -> id`}],
-  [23, { regra: `OPRD -> num`}],
-  [24, { regra: `A -> COND A`}],
-  [25, { regra: `COND -> CAB CP`}],
-  [26, { regra: `CAB -> se ab_p EXP_R fc_p então`}],
-  [27, { regra: `EXP_R -> OPRD opr OPRD`}],
-  [28, { regra: `CP -> ES CP`}],
-  [29, { regra: `CP -> CMD CP`}],
-  [30, { regra: `CP -> COND CP`}],
-  [31, { regra: `CP -> fimse`}],
-  [32, { regra: `A -> fim`}],
-]);
 
 const tabelaSimbolos = palavrasReservadas;
 const tabelaTokens = [];
@@ -116,6 +82,16 @@ const printTables = () => {
 const finalizaArquivo = () => {
   adicionaToken(retornaEOF());
   printTables();
+  reiniciaVariaveis();
+}
+
+const reiniciaVariaveis = () => {
+  cursor = 0;
+  linha = 1;
+  coluna = 1;
+  simbolo = '';
+  ch = conteudoArquivoSelecionado[cursor];
+  prox = conteudoArquivoSelecionado[cursor + 1];
 }
 
 const retornaEOF = () => ({Classe: 'EOF', Lexema: simbolo, Tipo: 'Final de Arquivo'});
@@ -346,12 +322,95 @@ const scanner = () => {
 }
 
 const parser = () => {
-  
   do {
     scanner();
   } while (cursor < conteudoArquivoSelecionado.length);
-
   finalizaArquivo();
 }
 
 parser();
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// ANALISADOR SINTÁTICO ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+const regrasGramaticais = new Map([
+  [1, { regra: `P' -> P`, reduz: 2}],
+  [2, { regra: `P -> inicio V A`, reduz: 6}],
+  [3, { regra: `V -> varinicio LV`, reduz: 4}],
+  [4, { regra: `LV -> D LV`, reduz: 4}],
+  [5, { regra: `LV -> varfim pt_v`, reduz: 4}],
+  [6, { regra: `D -> TIPO L pt_v`, reduz: 6}],
+  [7, { regra: `L -> id vir L`, reduz: 6}],
+  [8, { regra: `L -> id`, reduz: 2}],
+  [9, { regra: `TIPO -> inteiro`, reduz: 2}],
+  [10, { regra: `TIPO -> real`, reduz: 2}],
+  [11, { regra: `TIPO -> literal`, reduz: 2}],
+  [12, { regra: `A -> ES A`, reduz: 4}],
+  [13, { regra: `ES -> leia id pt_v`, reduz: 6}],
+  [14, { regra: `ES -> escreva ARG pt_v`, reduz: 6}],
+  [15, { regra: `ARG -> lit`, reduz: 2}],
+  [16, { regra: `ARG -> num`, reduz: 2}],
+  [17, { regra: `ARG -> id`, reduz: 2}],
+  [18, { regra: `A -> CMD A`, reduz: 4}],
+  [19, { regra: `CMD -> id atr LD pt_v`, reduz: 8}],
+  [20, { regra: `LD -> OPRD opa OPRD`, reduz: 6}],
+  [21, { regra: `LD -> OPRD`, reduz: 2}],
+  [22, { regra: `OPRD -> id`, reduz: 2}],
+  [23, { regra: `OPRD -> num`, reduz: 2}],
+  [24, { regra: `A -> COND A`, reduz: 4}],
+  [25, { regra: `COND -> CAB CP`, reduz: 4}],
+  [26, { regra: `CAB -> se ab_p EXP_R fc_p então`, reduz: 10}],
+  [27, { regra: `EXP_R -> OPRD opr OPRD`, reduz: 6}],
+  [28, { regra: `CP -> ES CP`, reduz: 4}],
+  [29, { regra: `CP -> CMD CP`, reduz: 4}],
+  [30, { regra: `CP -> COND CP`, reduz: 4}],
+  [31, { regra: `CP -> fimse`, reduz: 4}],
+  [32, { regra: `A -> fim`, reduz: 2}],
+]);
+
+let pilha = [0];
+
+const tabelaCanonica = {
+  0: {
+    'terminais': {
+      'inicio': 's2',
+    },
+    'nãoTerminais': {
+
+    },
+  }
+};
+
+const verificaAção = (ação) => {
+  switch (ação[0]) {
+    case 's':
+      // joga token.classe pra pilha, joga estado pra pilha
+      return console.log('shift');
+    case 'r':
+      // remove R estados do topo da pilha
+      return console.log('reduce');
+    case 'a':
+      return console.log('accept');
+    case 'e':
+      return console.log('error');  
+  }
+}
+
+const retornaTopoPilha = () => pilha[pilha.length - 1];
+const adicionaPilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
+const removePilha = (quantiaReduzida) => {
+  while (quantiaReduzida--) {
+    pilha.pop();
+  }
+}
+
+console.log(verificaAção(tabelaCanonica[0]['inicio']));
+
+// parser();
+// comparar classe do primeiro token com topo da pilha
+// na tabela canônica.
+// chamar função pertinente. switch(ação) {accept, error, shift, reduce}
+// produzir árvore
