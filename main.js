@@ -13,6 +13,40 @@ const palavrasReservadas = require('./palavrasReservadas');
 const letras = require('./letras');
 const listaDeErros = require('./listaDeErros');
 const digitos = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const regrasGramaticais = new Map([
+  [1, { regra: `P' -> P`}],
+  [2, { regra: `P -> inicio V A`}],
+  [3, { regra: `V -> varinicio LV`}],
+  [4, { regra: `LV -> D LV`}],
+  [5, { regra: `LV -> varfim pt_v`}],
+  [6, { regra: `D -> TIPO L pt_v`}],
+  [7, { regra: `L -> id vir L`}],
+  [8, { regra: `L -> id`}],
+  [9, { regra: `TIPO -> inteiro`}],
+  [10, { regra: `TIPO -> real`}],
+  [11, { regra: `TIPO -> literal`}],
+  [12, { regra: `A -> ES A`}],
+  [13, { regra: `ES -> leia id pt_v`}],
+  [14, { regra: `ES -> escreva ARG pt_v`}],
+  [15, { regra: `ARG -> lit`}],
+  [16, { regra: `ARG -> num`}],
+  [17, { regra: `ARG -> id`}],
+  [18, { regra: `A -> CMD A`}],
+  [19, { regra: `CMD -> id atr LD pt_v`}],
+  [20, { regra: `LD -> OPRD opa OPRD`}],
+  [21, { regra: `LD -> OPRD`}],
+  [22, { regra: `OPRD -> id`}],
+  [23, { regra: `OPRD -> num`}],
+  [24, { regra: `A -> COND A`}],
+  [25, { regra: `COND -> CAB CP`}],
+  [26, { regra: `CAB -> se ab_p EXP_R fc_p então`}],
+  [27, { regra: `EXP_R -> OPRD opr OPRD`}],
+  [28, { regra: `CP -> ES CP`}],
+  [29, { regra: `CP -> CMD CP`}],
+  [30, { regra: `CP -> COND CP`}],
+  [31, { regra: `CP -> fimse`}],
+  [32, { regra: `A -> fim`}],
+]);
 
 const tabelaSimbolos = palavrasReservadas;
 const tabelaTokens = [];
