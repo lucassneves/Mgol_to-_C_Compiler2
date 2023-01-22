@@ -24,7 +24,7 @@ inicio
   escreva C;
   B<-B+1;
   escreva "\nB=\n"; {\n é o símbolo para salto de linha}
-  escreva 14.5e;
+  escreva 14.5;
   escreva "\n";
   escreva C;
   escreva "\n";
