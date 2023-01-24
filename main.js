@@ -334,6 +334,9 @@ const scanner = () => {
 const parser = () => {
   do {
     scanner();
+
+    // let token = scanner();
+    // tabelaTokens.push(token);
   } while (cursor < conteudoArquivoSelecionado.length);
   finalizaArquivo();
 }
@@ -383,6 +386,7 @@ const regrasGramaticais = new Map([
   [32, { regra: `A -> fim`, reduz: 2, reduzPara: `A`}],
 ]);
 
+let contadorRedução = 1;
 let estadoInicial = 0
 let pilha = [estadoInicial];
 
@@ -403,36 +407,39 @@ const GOTO = (estado) => {
 }
 
 const shift = (classeToken, estado) => {
-  // console.log('Início shift, token antes:', token, 'pilha antes:', pilha);
-  pilha.push(classeToken);
-  pilha.push(parseInt(estado));
+  empilha(classeToken);
+  empilha(parseInt(estado));
   token = getToken();
-  // console.log('Fim shift, token depois:', token, 'pilha depois:', pilha);
 };
 
-const reduction = (numeroRegra) => {
-  // console.log('Antes redução, token depois:', token, 'pilha depois:', pilha);
-  
+const imprimeRedução = (regraGramatical) => {
+  console.log(`${contadorRedução} - Redução feita: ${regraGramatical}`);
+  contadorRedução++;
+}
+
+const redução = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
   removePilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
-  console.log(regraGramatical.regra);
+  imprimeRedução(regraGramatical.regra);
   consultaTabelaNãoTerminais();
-  // console.log('Depois redução, token depois:', token, 'pilha depois:', pilha);
+}
+
+var fimAnaliseSintatica = false;
+
+const finalizaAnalisadorSintatico = () => {
+  fimAnaliseSintatica = true;
+  console.log('Análise Terminou');
 }
 
 const realizaAção = (ação) => {
-  // console.log('ação:', ação);
   switch (ação[0]) {
-    case 's':
     case 'S':  
       return shift(token.Classe, ação.slice(1));
     case 'r':
-    case 'R':  
-      return reduction(ação.slice(1));
+      return redução(ação.slice(1));
     case 'a':
-    case 'A':
-      return console.log('accept');
+      return finalizaAnalisadorSintatico();
     default:
       return token = getToken();  
   }
@@ -454,38 +461,12 @@ const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
-
-
 let token = getToken();
 
-/*
-while (tabelaTokens.length !== 0) {
+do {
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
-}
-*/
-
-
-
-
-for (var i = 0; i<100; i++) {
-  let ação = consultaTabelaTerminais(token.Classe);
-  realizaAção(ação);
-}
-
-
-
-  
-
-
-
-
-
-// parser();
-// comparar classe do primeiro token com topo da pilha
-// na tabela canônica.
-// chamar função pertinente. switch(ação) {accept, error, shift, reduce}
-// produzir árvore
+} while (!fimAnaliseSintatica);
 
 };
 

@@ -1,4 +1,4 @@
-estado,inicio,varinicio,varfim,escreva,leia,se,entao,fim,fimse,inteiro,literal,real,num,lit,id,opr,atr,opa,ab_p,fc_p,pt_v,vir,$,
+estado,inicio,varinicio,varfim,escreva,leia,se,entao,fim,fimse,inteiro,literal,real,num,lit,id,opr,atr,opa,ab_p,fc_p,pt_v,vir,eof,
 0,S2,,,,,,,,,,,,,,,,,,,,,,,
 1,,,,,,,,,,,,,,,,,,,,,,,acc,
 2, ,S4,,,,,,,,,,,,,,,,,,,,,,
@@ -59,5 +59,5 @@ estado,inicio,varinicio,varfim,escreva,leia,se,entao,fim,fimse,inteiro,literal,r
 57,,,,,,,,,,,,,S44,,S43,,,,,,,,,
 58,,,,,,,,,,,,,,,,,,,,,r7,,,
 59,,,,,,,,,,,,,,,,,,,,,r20,,,
-60,,,,r26,r26,r26,,r26,r26,,,,,,r26,,,,,,,,,
+60,,,,r26,r26,r26,,,r26,,,,,,r26,,,,,,,,,
 61,,,,,,,,,,,,,,,,,,,,r27,,,,
