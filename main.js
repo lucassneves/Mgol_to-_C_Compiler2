@@ -403,20 +403,22 @@ const GOTO = (estado) => {
 }
 
 const shift = (classeToken, estado) => {
-  console.log('Início shift, token antes:', token, 'pilha antes:', pilha);
+  // console.log('Início shift, token antes:', token, 'pilha antes:', pilha);
   pilha.push(classeToken);
   pilha.push(parseInt(estado));
   token = getToken();
-  console.log('Fim shift, token depois:', token, 'pilha depois:', pilha);
+  // console.log('Fim shift, token depois:', token, 'pilha depois:', pilha);
 };
 
 const reduction = (numeroRegra) => {
+  // console.log('Antes redução, token depois:', token, 'pilha depois:', pilha);
+  
   let regraGramatical = getRegraGramatical(numeroRegra);
-  // console.log('regra:', regraGramatical);
   removePilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   console.log(regraGramatical.regra);
   consultaTabelaNãoTerminais();
+  // console.log('Depois redução, token depois:', token, 'pilha depois:', pilha);
 }
 
 const realizaAção = (ação) => {
@@ -456,19 +458,21 @@ const retornaAção = () => {
 
 let token = getToken();
 
-
+/*
 while (tabelaTokens.length !== 0) {
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 }
+*/
 
 
-/*
-for (var i = 0; i<20; i++) {
+
+
+for (var i = 0; i<100; i++) {
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 }
-*/
+
 
 
   
