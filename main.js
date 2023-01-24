@@ -104,17 +104,17 @@ const reiniciaVariaveis = () => {
   prox = conteudoArquivoSelecionado[cursor + 1];
 }
 
-const retornaEOF = () => ({Classe: 'EOF', Lexema: simbolo, Tipo: ''});
+const retornaEOF = () => ({Classe: 'eof', Lexema: simbolo, Tipo: ''});
 
-const retornaVIR = () => ({Classe: 'VIR', Lexema: ',', Tipo: ''});
+const retornaVIR = () => ({Classe: 'vir', Lexema: ',', Tipo: ''});
 
-const retornaPT_V = () => ({Classe: 'PT_V', Lexema: ';', Tipo: ''});
+const retornaPT_V = () => ({Classe: 'pt_v', Lexema: ';', Tipo: ''});
 
-const retornaAB_P = () => ({Classe: 'AB_P', Lexema: '(', Tipo: ''});
+const retornaAB_P = () => ({Classe: 'ab_p', Lexema: '(', Tipo: ''});
 
-const retornaFC_P = () => ({Classe: 'FC_P', Lexema: ')', Tipo: ''});
+const retornaFC_P = () => ({Classe: 'fc_p', Lexema: ')', Tipo: ''});
 
-const retornaERRO = () => ({Classe: 'ERRO', Lexema: simbolo, Tipo: ''});
+const retornaERRO = () => ({Classe: 'erro', Lexema: simbolo, Tipo: ''});
 
 const retornaID = () => {
   if (!tabelaSimbolos.find(token => token.Lexema === simbolo)) {
@@ -127,17 +127,17 @@ const retornaID = () => {
 
 const retornaNUM = () => {
   return simbolo.search(ch => ch === '.') === -1 ? 
-    {Classe: 'Num', Lexema: simbolo, Tipo: 'Inteiro'} : 
-    {Classe: 'Num', Lexema: simbolo, Tipo: 'Real'};
+    {Classe: 'num', Lexema: simbolo, Tipo: 'Inteiro'} : 
+    {Classe: 'num', Lexema: simbolo, Tipo: 'Real'};
 }
 
-const retornaLIT = () => ({Classe: 'Lit', Lexema: simbolo, Tipo: ''});
+const retornaLIT = () => ({Classe: 'lit', Lexema: simbolo, Tipo: ''});
 
-const retornaATR = () => ({Classe: 'ATR', Lexema: '<-', Tipo: ''});
+const retornaATR = () => ({Classe: 'atr', Lexema: '<-', Tipo: ''});
 
-const retornaOPA = () => ({Classe: 'OPA', Lexema: simbolo, Tipo: ''});
+const retornaOPA = () => ({Classe: 'opa', Lexema: simbolo, Tipo: ''});
 
-const retornaOPR = () => ({Classe: 'OPR', Lexema: simbolo, Tipo: ''});
+const retornaOPR = () => ({Classe: 'opr', Lexema: simbolo, Tipo: ''});
 
 const leComentario = () => {
   while (ch !== '}' && ch !== undefined) {
@@ -390,42 +390,57 @@ const getRegraGramatical = (numeroRegra) => {
   return regrasGramaticais.get(parseInt(numeroRegra));
 }
 
+const consultaTabelaTerminais = (classe) => {
+  return tabelaTerminais[retornaTopoPilha()][classe];
+}
+
+const consultaTabelaNãoTerminais = () => {
+  return GOTO(tabelaNãoTerminais[retornaSegundoDaPilha()][retornaTopoPilha()]);
+}
+
+const GOTO = (estado) => {
+  empilha(parseInt(estado));
+}
+
 const shift = (classeToken, estado) => {
+  console.log('Início shift, token antes:', token, 'pilha antes:', pilha);
   pilha.push(classeToken);
   pilha.push(parseInt(estado));
-  console.log('pilha:', pilha);
   token = getToken();
-  console.log('token:', token);
+  console.log('Fim shift, token depois:', token, 'pilha depois:', pilha);
 };
 
-const redução = (numeroRegra) => {
+const reduction = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
+  // console.log('regra:', regraGramatical);
   removePilha(regraGramatical.reduz);
-  adicionaPilha(regraGramatical.reduzPara);
-  console.log('regra:', regraGramatical, 'pilha:', pilha);
+  empilha(regraGramatical.reduzPara);
+  console.log(regraGramatical.regra);
+  consultaTabelaNãoTerminais();
 }
 
 const realizaAção = (ação) => {
-  console.log('realizaAção, ação:', ação);
+  // console.log('ação:', ação);
   switch (ação[0]) {
     case 's':
     case 'S':  
       return shift(token.Classe, ação.slice(1));
     case 'r':
     case 'R':  
-      // remove R estados do topo da pilha
-      return redução(ação.slice(1));
+      return reduction(ação.slice(1));
     case 'a':
     case 'A':
       return console.log('accept');
     default:
-      return console.error('error');  
+      return token = getToken();  
   }
 };
 
 const retornaTopoPilha = () => pilha[pilha.length - 1];
 
-const adicionaPilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
+const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
+
+const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
 const removePilha = (quantiaReduzida) => {
   while (quantiaReduzida--) {
@@ -437,24 +452,24 @@ const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
-const consultaTabelaTerminais = (classe) => {
-  console.log(tabelaTerminais[retornaTopoPilha()]);
-  return tabelaTerminais[retornaTopoPilha()][classe];
-}
+
 
 let token = getToken();
 
-/*
+
 while (tabelaTokens.length !== 0) {
+  let ação = consultaTabelaTerminais(token.Classe);
+  realizaAção(ação);
+}
+
+
+/*
+for (var i = 0; i<20; i++) {
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 }
 */
 
-for (var i = 0; i<20; i++) {
-  let ação = consultaTabelaTerminais(token.Classe);
-  realizaAção(ação);
-}
 
   
 
