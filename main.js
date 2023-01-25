@@ -84,14 +84,15 @@ const adicionaTokenEAvança = (token) => {
   reiniciaSimbolo();
 }
 
-const printTables = () => {
+const imprimeLéxico = () => {
   console.table(tabelaTokens);
   console.table(tabelaSimbolos);
+  console.log("Fim análise léxica");
 }
 
 const finalizaArquivo = () => {
   adicionaToken(retornaEOF());
-  printTables();
+  imprimeLéxico();
   reiniciaVariaveis();
 }
 
@@ -127,8 +128,8 @@ const retornaID = () => {
 
 const retornaNUM = () => {
   return simbolo.search(ch => ch === '.') === -1 ? 
-    {Classe: 'num', Lexema: simbolo, Tipo: 'Inteiro'} : 
-    {Classe: 'num', Lexema: simbolo, Tipo: 'Real'};
+    {Classe: 'num', Lexema: simbolo, Tipo: ''} : // inteiro
+    {Classe: 'num', Lexema: simbolo, Tipo: ''}; // real
 }
 
 const retornaLIT = () => ({Classe: 'lit', Lexema: simbolo, Tipo: ''});
@@ -334,9 +335,6 @@ const scanner = () => {
 const parser = () => {
   do {
     scanner();
-
-    // let token = scanner();
-    // tabelaTokens.push(token);
   } while (cursor < conteudoArquivoSelecionado.length);
   finalizaArquivo();
 }
@@ -349,46 +347,53 @@ parser();
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-const getToken = () => tabelaTokens.shift();
-
-const regrasGramaticais = new Map([
-  [1, { regra: `P' -> P`, reduz: 2, reduzPara: `P'`}],
-  [2, { regra: `P -> inicio V A`, reduz: 6, reduzPara: `P`}],
-  [3, { regra: `V -> varinicio LV`, reduz: 4, reduzPara: `V`}],
-  [4, { regra: `LV -> D LV`, reduz: 4, reduzPara: `LV`}],
-  [5, { regra: `LV -> varfim pt_v`, reduz: 4, reduzPara: `LV`}],
-  [6, { regra: `D -> TIPO L pt_v`, reduz: 6, reduzPara: `D`}],
-  [7, { regra: `L -> id vir L`, reduz: 6, reduzPara: `L`}],
-  [8, { regra: `L -> id`, reduz: 2, reduzPara: `L`}],
-  [9, { regra: `TIPO -> inteiro`, reduz: 2, reduzPara: `TIPO`}],
-  [10, { regra: `TIPO -> real`, reduz: 2, reduzPara: `TIPO`}],
-  [11, { regra: `TIPO -> literal`, reduz: 2, reduzPara: `TIPO`}],
-  [12, { regra: `A -> ES A`, reduz: 4, reduzPara: `A`}],
-  [13, { regra: `ES -> leia id pt_v`, reduz: 6, reduzPara: `ES`}],
-  [14, { regra: `ES -> escreva ARG pt_v`, reduz: 6, reduzPara: `ES`}],
-  [15, { regra: `ARG -> lit`, reduz: 2, reduzPara: `ARG`}],
-  [16, { regra: `ARG -> num`, reduz: 2, reduzPara: `ARG`}],
-  [17, { regra: `ARG -> id`, reduz: 2, reduzPara: `ARG`}],
-  [18, { regra: `A -> CMD A`, reduz: 4, reduzPara: `A`}],
-  [19, { regra: `CMD -> id atr LD pt_v`, reduz: 8, reduzPara: `CMD`}],
-  [20, { regra: `LD -> OPRD opa OPRD`, reduz: 6, reduzPara: `LD`}],
-  [21, { regra: `LD -> OPRD`, reduz: 2, reduzPara: `LD`}],
-  [22, { regra: `OPRD -> id`, reduz: 2, reduzPara: `OPRD`}],
-  [23, { regra: `OPRD -> num`, reduz: 2, reduzPara: `OPRD`}],
-  [24, { regra: `A -> COND A`, reduz: 4, reduzPara: `A`}],
-  [25, { regra: `COND -> CAB CP`, reduz: 4, reduzPara: `COND`}],
-  [26, { regra: `CAB -> se ab_p EXP_R fc_p então`, reduz: 10, reduzPara: `CAB`}],
-  [27, { regra: `EXP_R -> OPRD opr OPRD`, reduz: 6, reduzPara: `EXP_R`}],
-  [28, { regra: `CP -> ES CP`, reduz: 4, reduzPara: `CP`}],
-  [29, { regra: `CP -> CMD CP`, reduz: 4, reduzPara: `CP`}],
-  [30, { regra: `CP -> COND CP`, reduz: 4, reduzPara: `CP`}],
-  [31, { regra: `CP -> fimse`, reduz: 4, reduzPara: `CP`}],
-  [32, { regra: `A -> fim`, reduz: 2, reduzPara: `A`}],
-]);
-
-let contadorRedução = 1;
 let estadoInicial = 0
 let pilha = [estadoInicial];
+let fimAnaliseSintatica = false;
+let tabelaRedução = [];
+
+const getToken = () => {
+  if (tabelaTokens.length > 0) {
+    return tabelaTokens.shift();
+  } else {
+    fimAnaliseSintatica = true;
+  }
+}
+
+const regrasGramaticais = new Map([
+  [1, { regra: `P' -> P`, reduz: 2, reduzPara: `P'`, numero: 1}],
+  [2, { regra: `P -> inicio V A`, reduz: 6, reduzPara: `P`, numero: 2}],
+  [3, { regra: `V -> varinicio LV`, reduz: 4, reduzPara: `V`, numero: 3}],
+  [4, { regra: `LV -> D LV`, reduz: 4, reduzPara: `LV`, numero: 4}],
+  [5, { regra: `LV -> varfim pt_v`, reduz: 4, reduzPara: `LV`, numero: 5}],
+  [6, { regra: `D -> TIPO L pt_v`, reduz: 6, reduzPara: `D`, numero: 6}],
+  [7, { regra: `L -> id vir L`, reduz: 6, reduzPara: `L`, numero: 7}],
+  [8, { regra: `L -> id`, reduz: 2, reduzPara: `L`, numero: 8}],
+  [9, { regra: `TIPO -> inteiro`, reduz: 2, reduzPara: `TIPO`, numero: 9}],
+  [10, { regra: `TIPO -> real`, reduz: 2, reduzPara: `TIPO`, numero: 10}],
+  [11, { regra: `TIPO -> literal`, reduz: 2, reduzPara: `TIPO`, numero: 11}],
+  [12, { regra: `A -> ES A`, reduz: 4, reduzPara: `A`, numero: 12}],
+  [13, { regra: `ES -> leia id pt_v`, reduz: 6, reduzPara: `ES`, numero: 13}],
+  [14, { regra: `ES -> escreva ARG pt_v`, reduz: 6, reduzPara: `ES`, numero: 14}],
+  [15, { regra: `ARG -> lit`, reduz: 2, reduzPara: `ARG`, numero: 15}],
+  [16, { regra: `ARG -> num`, reduz: 2, reduzPara: `ARG`, numero: 16}],
+  [17, { regra: `ARG -> id`, reduz: 2, reduzPara: `ARG`, numero: 17}],
+  [18, { regra: `A -> CMD A`, reduz: 4, reduzPara: `A`, numero: 18}],
+  [19, { regra: `CMD -> id atr LD pt_v`, reduz: 8, reduzPara: `CMD`, numero: 19}],
+  [20, { regra: `LD -> OPRD opa OPRD`, reduz: 6, reduzPara: `LD`, numero: 20}],
+  [21, { regra: `LD -> OPRD`, reduz: 2, reduzPara: `LD`, numero: 21}],
+  [22, { regra: `OPRD -> id`, reduz: 2, reduzPara: `OPRD`, numero: 22}],
+  [23, { regra: `OPRD -> num`, reduz: 2, reduzPara: `OPRD`, numero: 23}],
+  [24, { regra: `A -> COND A`, reduz: 4, reduzPara: `A`, numero: 24}],
+  [25, { regra: `COND -> CAB CP`, reduz: 4, reduzPara: `COND`, numero: 25}],
+  [26, { regra: `CAB -> se ab_p EXP_R fc_p então`, reduz: 10, reduzPara: `CAB`, numero: 26}],
+  [27, { regra: `EXP_R -> OPRD opr OPRD`, reduz: 6, reduzPara: `EXP_R`, numero: 27}],
+  [28, { regra: `CP -> ES CP`, reduz: 4, reduzPara: `CP`, numero: 28}],
+  [29, { regra: `CP -> CMD CP`, reduz: 4, reduzPara: `CP`, numero: 29}],
+  [30, { regra: `CP -> COND CP`, reduz: 4, reduzPara: `CP`, numero: 30}],
+  [31, { regra: `CP -> fimse`, reduz: 4, reduzPara: `CP`, numero: 31}],
+  [32, { regra: `A -> fim`, reduz: 2, reduzPara: `A`, numero: 32}],
+]);
 
 const getRegraGramatical = (numeroRegra) => {
   return regrasGramaticais.get(parseInt(numeroRegra));
@@ -412,24 +417,29 @@ const shift = (classeToken, estado) => {
   token = getToken();
 };
 
-const imprimeRedução = (regraGramatical) => {
-  console.log(`${contadorRedução} - Redução feita: ${regraGramatical}`);
-  contadorRedução++;
+const salvaRedução = (regraGramatical) => {
+  tabelaRedução.push({regra: regraGramatical.numero,redução: `${regraGramatical.regra}`, pilha: pilha.join()});
 }
+
+const imprimeSintático = () => {
+  console.table(tabelaRedução)
+  console.log("Fim análise sintática");
+};
 
 const redução = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
-  removePilha(regraGramatical.reduz);
+
+  desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
-  imprimeRedução(regraGramatical.regra);
+  salvaRedução(regraGramatical);
+
   consultaTabelaNãoTerminais();
 }
 
-var fimAnaliseSintatica = false;
+const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
 
-const finalizaAnalisadorSintatico = () => {
-  fimAnaliseSintatica = true;
-  console.log('Análise Terminou');
+const modoPânico = () => {
+  token = getToken();
 }
 
 const realizaAção = (ação) => {
@@ -441,7 +451,7 @@ const realizaAção = (ação) => {
     case 'a':
       return finalizaAnalisadorSintatico();
     default:
-      return token = getToken();  
+      return modoPânico();  
   }
 };
 
@@ -451,7 +461,7 @@ const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
 
 const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
-const removePilha = (quantiaReduzida) => {
+const desempilha = (quantiaReduzida) => {
   while (quantiaReduzida--) {
     pilha.pop();
   }
@@ -467,6 +477,8 @@ do {
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
+
+imprimeSintático();
 
 };
 
