@@ -349,8 +349,10 @@ parser();
 
 let estadoInicial = 0
 let pilha = [estadoInicial];
+let pilhaSemântico = [];
 let fimAnaliseSintatica = false;
 let tabelaRedução = [];
+let inicializouArquivo = false;
 
 const getToken = () => {
   if (tabelaTokens.length > 0) {
@@ -426,12 +428,20 @@ const imprimeSintático = () => {
   console.log("Fim análise sintática");
 };
 
+const analisadorSemantico = (regraGramatical) => {
+  switch (regraGramatical) {
+    
+  }
+}
+
 const redução = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
 
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
+
+  analisadorSemantico(regraGramatical);
 
   consultaTabelaNãoTerminais();
 }
