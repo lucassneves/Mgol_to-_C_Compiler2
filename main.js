@@ -354,6 +354,13 @@ let fimAnaliseSintatica = false;
 let tabelaRedução = [];
 let inicializouArquivo = false;
 
+let numeroDeTemporarias = 0;
+let listaDeVariavelTemporarias = [];
+let flagError = false;
+let identificadorDeTabs = 1;
+let corpoDoTexto = [];
+let linhaDotexto = '';
+
 //Tokes para a validação do semântico
 let tokensSemantico = [];
 let montaToken = [];
@@ -433,98 +440,7 @@ const imprimeSintático = () => {
   console.log("Fim análise sintática");
 };
 
-
-
-const redução = (numeroRegra) => {
-  let regraGramatical = getRegraGramatical(numeroRegra);
-  desempilha(regraGramatical.reduz);
-  empilha(regraGramatical.reduzPara);
-  salvaRedução(regraGramatical);
-  consultaTabelaNãoTerminais();
-  //analisadorSemantico(regraGramatical);
-  //imprimeToken(regraGramatical);
-}
-
-const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
-
-const modoPânico = () => {
-  token = getToken();
-}
-
-const realizaAção = (ação) => {
-  switch (ação[0]) {
-    case 'S':  
-      return shift(token.Classe, ação.slice(1));
-    case 'r':
-      return redução(ação.slice(1));
-    case 'a':
-      return finalizaAnalisadorSintatico();
-    default:
-      return modoPânico();  
-  }
-};
-
-const retornaTopoPilha = () => pilha[pilha.length - 1];
-
-const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
-
-const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
-
-const empilhaSemantico = (token) => montaToken.push(token);
-
-const desempilha = (quantiaReduzida) => {
-  while (quantiaReduzida--) {
-    pilha.pop();
-  }
-};
-
-const retornaAção = () => {
-  return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
-};
-
-const imprimeToken = (regraGramatical) => {
-  console.log("\n\ni----------------------------------");
-  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
-
-  console.log(montaToken.length);
-  for (i = 0; i < montaToken.length; i++) {
-    console.log(`tokenClasse: ${montaToken[i].Classe}, tokenLexema: ${montaToken[i].Lexema}, tokenTipo: ${montaToken[i].Tipo}, `);
-  }
-  console.log("f----------------------------------\n\n");
-  montaToken = [];
-}
-
-let token = getToken();
-
-do {
-  let ação = consultaTabelaTerminais(token.Classe);
-  realizaAção(ação);
-} while (!fimAnaliseSintatica);
-
-imprimeSintático();
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// ANALISADOR SEMÁNTICO ////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-let numeroDeTemporarias = 0;
-let listaDeVariavelTemporarias = [];
-let flagError = false;
-let identificadorDeTabs = 1;
-let corpoDoTexto = [];
-
-
-const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
-  listaDeVariavelTemporarias.push(variavelTemporaria.tipo + " T" + listaDeVariavelTemporarias.length + ";");
-  // ou
-  //listaDeVariavelTemporarias.push(tipo + " T" + listaDeVariavelTemporarias.length + ";");
-};
-
-const acrecentaCorpoDoTexto = (texto) => {
+const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
 } 
 
@@ -538,7 +454,7 @@ const analisadorSemantico = (regraGramatical) => {
     // LV -> varfim pt_v
     case 5:
       linhaDeImpressão = "\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
-      acrecentaCorpoDoTexto(linhaDeImpressão);
+      acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
@@ -548,7 +464,7 @@ const analisadorSemantico = (regraGramatical) => {
       //let TIPO,L,pt_v = retornaTopoPilha();
       
       // linhaDeImpressão = TIPO.tipo + L.tipo;
-      acrecentaCorpoDoTexto(linhaDeImpressão);
+      acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
@@ -592,7 +508,7 @@ const analisadorSemantico = (regraGramatical) => {
         linhaDeImpressão = "scanf(“%d”, &id.lexema);";
       else if (id == "real")  
         linhaDeImpressão = "scanf(“%lf”, &id.lexema);";
-      acrecentaCorpoDoTexto(linhaDeImpressão);*/
+      acrescentaCorpoDoTexto(linhaDeImpressão);*/
       break;
 
 
@@ -696,6 +612,86 @@ const analisadorSemantico = (regraGramatical) => {
   }
 }
 
+const redução = (numeroRegra) => {
+  let regraGramatical = getRegraGramatical(numeroRegra);
+  desempilha(regraGramatical.reduz);
+  empilha(regraGramatical.reduzPara);
+  salvaRedução(regraGramatical);
+  consultaTabelaNãoTerminais();
+  analisadorSemantico(regraGramatical);
+  imprimeToken(regraGramatical);
+}
+
+const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
+
+const modoPânico = () => {
+  token = getToken();
+}
+
+const realizaAção = (ação) => {
+  switch (ação[0]) {
+    case 'S':  
+      return shift(token.Classe, ação.slice(1));
+    case 'r':
+      return redução(ação.slice(1));
+    case 'a':
+      return finalizaAnalisadorSintatico();
+    default:
+      return modoPânico();  
+  }
+};
+
+const retornaTopoPilha = () => pilha[pilha.length - 1];
+
+const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
+
+const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
+
+const empilhaSemantico = (token) => montaToken.push(token);
+
+const desempilha = (quantiaReduzida) => {
+  while (quantiaReduzida--) {
+    pilha.pop();
+  }
+};
+
+const retornaAção = () => {
+  return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
+};
+
+const imprimeToken = (regraGramatical) => {
+  console.log("\n\ni----------------------------------");
+  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
+
+  console.log(montaToken.length);
+  for (i = 0; i < montaToken.length; i++) {
+    console.log(`tokenClasse: ${montaToken[i].Classe}, tokenLexema: ${montaToken[i].Lexema}, tokenTipo: ${montaToken[i].Tipo}, `);
+  }
+  console.log("f----------------------------------\n\n");
+  montaToken = [];
+}
+
+let token = getToken();
+
+do {
+  let ação = consultaTabelaTerminais(token.Classe);
+  realizaAção(ação);
+} while (!fimAnaliseSintatica);
+
+imprimeSintático();
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// ANALISADOR SEMÁNTICO ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
+  listaDeVariavelTemporarias.push(variavelTemporaria.tipo + " T" + listaDeVariavelTemporarias.length + ";");
+  // ou
+  //listaDeVariavelTemporarias.push(tipo + " T" + listaDeVariavelTemporarias.length + ";");
+};
+
 const inicializaArquivo = () => {
   fs.writeFile('PROGRAMA.c', "#include<stdio.h>\n\ntypedef char literal[256];\nvoid main(void)\n{\t/*----Variaveis temporarias----*/\n", (err) => {
     if (err)
@@ -704,7 +700,6 @@ const inicializaArquivo = () => {
   );
   inicializouArquivo = true;
 }
-
 
 const acrescentaIdentificadorDeTabs= ()=>{
   identificadorDeTabs = identificadorDeTabs +1;
@@ -719,8 +714,7 @@ const imprimeTabs = ()=>{
     println("\t");
 }
 
-const imprimeCorpoDoTextoNoarquivo = ()=>{
-  let linhaDotexto;
+const imprimeCorpoDoTextoNoarquivo = () => {
   for (let i=0; i < corpoDoTexto.length; i++){
     linhaDotexto = corpoDoTexto[i];
 
@@ -754,7 +748,7 @@ const imprimeArquivo = () => {
 
   escreveNoArquivo("\t/*------------------------------*/\n");
   
-  imprimeCorpoDoTextoNoarquivo();
+  // imprimeCorpoDoTextoNoarquivo();
   
   escreveNoArquivo("}\n");
 }
