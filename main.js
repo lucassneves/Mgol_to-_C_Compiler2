@@ -349,10 +349,15 @@ parser();
 
 let estadoInicial = 0
 let pilha = [estadoInicial];
-let pilhaSemântico = [];
+
 let fimAnaliseSintatica = false;
 let tabelaRedução = [];
 let inicializouArquivo = false;
+
+//Tokes para a validação do semântico
+let tokensSemantico = [];
+let montaToken = [];
+
 
 const getToken = () => {
   if (tabelaTokens.length > 0) {
@@ -416,6 +421,7 @@ const GOTO = (estado) => {
 const shift = (classeToken, estado) => {
   empilha(classeToken);
   empilha(parseInt(estado));
+  empilhaParaSintatico();
   token = getToken();
 };
 
@@ -431,15 +437,16 @@ const imprimeSintático = () => {
 
 
 const redução = (numeroRegra) => {
+  
   let regraGramatical = getRegraGramatical(numeroRegra);
-
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
-
-  analisadorSemantico(regraGramatical);
-
   consultaTabelaNãoTerminais();
+  imprimeToken();
+  
+  analisadorSemantico(regraGramatical);
+  
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -467,19 +474,37 @@ const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
 
 const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
+const empilhaParaSintatico = () => montaToken.push({Classe:token.Classe,Lexema:token.Lexema,Tipo:token.Tipo});
+
 const desempilha = (quantiaReduzida) => {
   while (quantiaReduzida--) {
     pilha.pop();
+    tokensSemantico.push(montaToken.shift());
   }
+  montaToken = [];
 };
 
 const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
+const imprimeToken = ()=> {
+  console.log("----------------------------------");
+  console.log(tokensSemantico.length);
+  for (i = 0;i < tokensSemantico.length;i++) {
+    //console.log("Classe: " + tokensSemantico[i]['Classe']);
+    console.log("Lexo: " + tokensSemantico);
+    //console.log("Lexo: " + tokensSemantico[i].Lexema);
+    //console.log("Tipo: " + tokensSemantico[i].Tipo);
+  }
+  console.log("----------------------------------");
+  tokensSemantico = [];
+}
+
 let token = getToken();
 
 do {
+  //imprimeToken();
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
@@ -568,6 +593,15 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ES -> leia id pt_v  
     case 13:
+      /*id  = retornaTopoPilha();
+      //id =  retornaSegundoDaPilha();
+      if (id == "literal")
+        linhaDeImpressão = "scanf(“%s”, id.lexema);";
+      else if (id == "inteiro")  
+        linhaDeImpressão = "scanf(“%d”, &id.lexema);";
+      else if (id == "real")  
+        linhaDeImpressão = "scanf(“%lf”, &id.lexema);";
+      acrecentaCorpoDoTexto(linhaDeImpressão);*/
       break;
 
 
