@@ -484,6 +484,11 @@ do {
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
 
+imprimeSintático();
+
+};
+
+compiladorAguardaPromises();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -491,22 +496,180 @@ do {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 let numeroDeTemporarias = 0;
+let listaDeVariavelTemporarias = [];
 let flagError = false;
+let identificadorDeTabs = 1;
+let corpoDoTexto = [];
+
+
+const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
+  listaDeVariavelTemporarias.push(variavelTemporaria.tipo + " T" + listaDeVariavelTemporarias.length + ";");
+  // ou
+  //listaDeVariavelTemporarias.push(tipo + " T" + listaDeVariavelTemporarias.length + ";");
+};
+
+const acrecentaCorpoDoTexto = (texto)=>{
+  corpoDoTexto.push(texto);
+} 
 
 const analisadorSemantico = (regraGramatical) => {
-
+  let linhaDeImpressão;
+  let tokenP = retornaTopoPilha();
+  console.log("Topo da pilha: "+ tokenP.toString());
   
+  switch (regraGramatical.numero) {
 
-  switch (regraGramatical) {
-    
+    // LV -> varfim pt_v
+    case 5:
+      linhaDeImpressão = "\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
+      acrecentaCorpoDoTexto(linhaDeImpressão);
+      break;
+
+
+    // D -> TIPO L pt_v
+    case 6:
+      
+      //let TIPO,L,pt_v = retornaTopoPilha();
+      
+      linhaDeImpressão = TIPO.tipo + L.tipo;
+      acrecentaCorpoDoTexto(linhaDeImpressão);
+      break;
+
+
+    // L -> id vir L
+    case 7:
+      break;
+
+
+    // L -> id
+    case 8:
+      break;
+
+
+    // TIPO -> inteiro
+    case 9:
+      break;
+
+
+    // TIPO -> real
+    case 10:
+      break;
+
+
+    // TIPO -> literal
+    case 11:
+      break;
+      
+
+    // A -> ES A
+    case 12:
+      break;
+
+
+    // ES -> leia id pt_v  
+    case 13:
+      break;
+
+
+    // ES -> escreva ARG pt_v
+    case 14:
+      break;
+
+
+    // ARG -> lit
+    case 15:
+      break;
+
+
+    // ARG -> num
+    case 16:
+      break;
+
+
+    // ARG -> id
+    case 17:
+      break;
+
+
+    // A -> CMD A
+    case 18:
+      break;
+
+
+    // CMD -> id atr LD pt_v
+    case 19:
+      break;
+
+
+    // LD -> OPRD opa OPRD
+    case 20:
+      break;
+
+
+    // LD -> OPRD
+    case 21:
+      break;
+
+
+    // OPRD -> id
+    case 22:
+      break;
+
+
+    // OPRD -> num
+    case 23:
+      break;
+
+
+    // A -> COND A
+    case 24:
+      break;
+
+
+    // COND -> CAB CP
+    case 25:
+      break;
+
+
+    // CAB -> se ab_p EXP_R fc_p então
+    case 26:
+      break;
+
+
+    // EXP_R -> OPRD opr OPRD
+    case 27:
+      break;
+
+
+    // CP -> ES CP
+    case 28:
+      break;
+
+
+    // CP -> CMD CP
+    case 29:
+      break;
+
+
+    // CP -> COND CP
+    case 30:
+      break;
+
+
+    // CP -> fimse
+    case 31:
+      break;
+
+      
+    // A -> fim
+    case 32:
+      break;
   }
 }
 
-imprimeSintático();
 
-};
 
-compiladorAguardaPromises();
+
 
 const escreveNoArquivo = (texto)=>{
   fs.writeFile('main.c', texto, (err) => {
@@ -516,6 +679,57 @@ const escreveNoArquivo = (texto)=>{
   )
 };
 
-const acrecentaVariavelTemporaria = ()=>{
-  numeroDeTemporarias = numeroDeTemporarias+ 1;
-};
+
+const acrescentaIdentificadorDeTabs= ()=>{
+  identificadorDeTabs = identificadorDeTabs +1;
+}
+
+const decresceIdentificadorDeTabs= ()=>{
+  identificadorDeTabs = identificadorDeTabs -1;
+}
+
+const imprimeTabs = ()=>{
+  for (i = 0; i < identificadorDeTabs; i++)
+    println("\t");
+}
+
+const imprimeCorpoDoTextoNoarquivo = ()=>{
+  let linhaDotexto;
+  for (let i=0; i < corpoDoTexto.length; i++){
+    linhaDotexto = corpoDoTexto[i];
+
+    if (linhaDotexto.includes("}")){
+      decresceIdentificadorDeTabs();
+    }
+
+    imprimeTabs();
+    
+    escreveNoArquivo(linhaDotexto+"\n");
+    
+    //Esta verificação precisa estar em baixo
+    if (linhaDotexto.includes("{")){
+      acrescentaIdentificadorDeTabs();
+    }
+  }
+}
+
+
+
+
+const imprimeArquivo = ()=>{
+  escreveNoArquivo("#include<stdio.h>\n\n");
+  escreveNoArquivo("typedef char literal[256];\n");
+  escreveNoArquivo("void main(void)\n{");
+  escreveNoArquivo("\t/*----Variaveis temporarias----*/\n");
+
+  for (var i = 0;i < numeroDeTemporarias ; i++)
+    escreveNoArquivo(variavelTemporarias[i]);
+
+  escreveNoArquivo("\t/*------------------------------*/\n");
+  
+  imprimeCorpoDoTextoNoarquivo();
+  
+  escreveNoArquivo("}\n");
+  console.log("Impressão do arquivo " + nomeArquivoEmC + ".c concluida");
+}
+
