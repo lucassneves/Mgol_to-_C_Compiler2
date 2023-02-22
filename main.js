@@ -358,7 +358,6 @@ let inicializouArquivo = false;
 let tokensSemantico = [];
 let montaToken = [];
 
-
 const getToken = () => {
   if (tabelaTokens.length > 0) {
     return tabelaTokens.shift();
@@ -421,7 +420,7 @@ const GOTO = (estado) => {
 const shift = (classeToken, estado) => {
   empilha(classeToken);
   empilha(parseInt(estado));
-  empilhaParaSintatico();
+  empilhaSemantico(token);
   token = getToken();
 };
 
@@ -437,8 +436,9 @@ const imprimeSintático = () => {
 
 
 const redução = (numeroRegra) => {
-  
   let regraGramatical = getRegraGramatical(numeroRegra);
+  console.log("\n\ni----------------------------------");
+  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
@@ -474,37 +474,30 @@ const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
 
 const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
-const empilhaParaSintatico = () => montaToken.push({Classe:token.Classe,Lexema:token.Lexema,Tipo:token.Tipo});
+const empilhaSemantico = (token) => montaToken.push(token);
 
 const desempilha = (quantiaReduzida) => {
   while (quantiaReduzida--) {
     pilha.pop();
-    tokensSemantico.push(montaToken.shift());
   }
-  montaToken = [];
 };
 
 const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
-const imprimeToken = ()=> {
-  console.log("----------------------------------");
-  console.log(tokensSemantico.length);
-  for (i = 0;i < tokensSemantico.length;i++) {
-    //console.log("Classe: " + tokensSemantico[i]['Classe']);
-    console.log("Lexo: " + tokensSemantico);
-    //console.log("Lexo: " + tokensSemantico[i].Lexema);
-    //console.log("Tipo: " + tokensSemantico[i].Tipo);
+const imprimeToken = () => {
+  console.log(montaToken.length);
+  for (i = 0; i < montaToken.length; i++) {
+    console.log(`tokenClasse: ${montaToken[i].Classe}, tokenLexema: ${montaToken[i].Lexema}, tokenTipo: ${montaToken[i].Tipo}, `);
   }
-  console.log("----------------------------------");
-  tokensSemantico = [];
+  console.log("f----------------------------------\n\n");
+  montaToken = [];
 }
 
 let token = getToken();
 
 do {
-  //imprimeToken();
   let ação = consultaTabelaTerminais(token.Classe);
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
@@ -520,6 +513,7 @@ compiladorAguardaPromises();
 // ANALISADOR SEMÁNTICO ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
 let numeroDeTemporarias = 0;
 let listaDeVariavelTemporarias = [];
 let flagError = false;
@@ -533,17 +527,17 @@ const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
   //listaDeVariavelTemporarias.push(tipo + " T" + listaDeVariavelTemporarias.length + ";");
 };
 
-const acrecentaCorpoDoTexto = (texto)=>{
+const acrecentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
 } 
 
 const analisadorSemantico = (regraGramatical) => {
+  console.log(montaToken);
   let linhaDeImpressão;
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
   
   switch (regraGramatical.numero) {
-
     // LV -> varfim pt_v
     case 5:
       linhaDeImpressão = "\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
@@ -622,6 +616,8 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ARG -> id
     case 17:
+      imprimeToken();
+      // tabelaSimbolos.find()
       break;
 
 
@@ -697,6 +693,9 @@ const analisadorSemantico = (regraGramatical) => {
       
     // A -> fim
     case 32:
+      break;
+
+    default:
       break;
   }
 }
