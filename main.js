@@ -428,11 +428,7 @@ const imprimeSintático = () => {
   console.log("Fim análise sintática");
 };
 
-const analisadorSemantico = (regraGramatical) => {
-  switch (regraGramatical) {
-    
-  }
-}
+
 
 const redução = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
@@ -488,8 +484,38 @@ do {
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
 
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// ANALISADOR SEMÁNTICO ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+let numeroDeTemporarias = 0;
+let flagError = false;
+
+const analisadorSemantico = (regraGramatical) => {
+
+  
+
+  switch (regraGramatical) {
+    
+  }
+}
+
 imprimeSintático();
 
 };
 
 compiladorAguardaPromises();
+
+const escreveNoArquivo = (texto)=>{
+  fs.writeFile('main.c', texto, (err) => {
+    if (err)
+      throw err;
+    }
+  )
+};
+
+const acrecentaVariavelTemporaria = ()=>{
+  numeroDeTemporarias = numeroDeTemporarias+ 1;
+};
