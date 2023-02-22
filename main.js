@@ -514,8 +514,8 @@ const acrecentaCorpoDoTexto = (texto)=>{
 
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  let tokenP = retornaTopoPilha();
-  console.log("Topo da pilha: "+ tokenP.toString());
+  // let tokenP = retornaTopoPilha();
+  // console.log("Topo da pilha: "+ tokenP.toString());
   
   switch (regraGramatical.numero) {
 
@@ -531,7 +531,7 @@ const analisadorSemantico = (regraGramatical) => {
       
       //let TIPO,L,pt_v = retornaTopoPilha();
       
-      linhaDeImpressão = TIPO.tipo + L.tipo;
+      // linhaDeImpressão = TIPO.tipo + L.tipo;
       acrecentaCorpoDoTexto(linhaDeImpressão);
       break;
 
@@ -667,16 +667,13 @@ const analisadorSemantico = (regraGramatical) => {
   }
 }
 
-
-
-
-
-const escreveNoArquivo = (texto)=>{
-  fs.writeFile('main.c', texto, (err) => {
+const inicializaArquivo = () => {
+  fs.writeFile('PROGRAMA.c', "#include<stdio.h>\n\ntypedef char literal[256];\nvoid main(void)\n{\t/*----Variaveis temporarias----*/\n", (err) => {
     if (err)
       throw err;
     }
-  )
+  );
+  inicializouArquivo = true;
 };
 
 
@@ -713,14 +710,15 @@ const imprimeCorpoDoTextoNoarquivo = ()=>{
   }
 }
 
+const escreveNoArquivo = (texto) => {
+  fs.appendFile('PROGRAMA.c', texto, function(err) {
+    if (err) throw err;
+  });
+}
 
 
-
-const imprimeArquivo = ()=>{
-  escreveNoArquivo("#include<stdio.h>\n\n");
-  escreveNoArquivo("typedef char literal[256];\n");
-  escreveNoArquivo("void main(void)\n{");
-  escreveNoArquivo("\t/*----Variaveis temporarias----*/\n");
+const imprimeArquivo = () => {
+  inicializaArquivo();
 
   for (var i = 0;i < numeroDeTemporarias ; i++)
     escreveNoArquivo(variavelTemporarias[i]);
@@ -730,6 +728,6 @@ const imprimeArquivo = ()=>{
   imprimeCorpoDoTextoNoarquivo();
   
   escreveNoArquivo("}\n");
-  console.log("Impressão do arquivo " + nomeArquivoEmC + ".c concluida");
 }
 
+imprimeArquivo();
