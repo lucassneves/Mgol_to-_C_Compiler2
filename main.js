@@ -437,16 +437,12 @@ const imprimeSintático = () => {
 
 const redução = (numeroRegra) => {
   let regraGramatical = getRegraGramatical(numeroRegra);
-  console.log("\n\ni----------------------------------");
-  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
   consultaTabelaNãoTerminais();
-  imprimeToken();
-  
-  analisadorSemantico(regraGramatical);
-  
+  //analisadorSemantico(regraGramatical);
+  //imprimeToken(regraGramatical);
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -486,7 +482,10 @@ const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
-const imprimeToken = () => {
+const imprimeToken = (regraGramatical) => {
+  console.log("\n\ni----------------------------------");
+  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
+
   console.log(montaToken.length);
   for (i = 0; i < montaToken.length; i++) {
     console.log(`tokenClasse: ${montaToken[i].Classe}, tokenLexema: ${montaToken[i].Lexema}, tokenTipo: ${montaToken[i].Tipo}, `);
@@ -504,9 +503,7 @@ do {
 
 imprimeSintático();
 
-};
 
-compiladorAguardaPromises();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,8 +529,8 @@ const acrecentaCorpoDoTexto = (texto) => {
 } 
 
 const analisadorSemantico = (regraGramatical) => {
-  console.log(montaToken);
   let linhaDeImpressão;
+  imprimeToken(regraGramatical);
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
   
@@ -616,7 +613,6 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ARG -> id
     case 17:
-      imprimeToken();
       // tabelaSimbolos.find()
       break;
 
@@ -707,7 +703,7 @@ const inicializaArquivo = () => {
     }
   );
   inicializouArquivo = true;
-};
+}
 
 
 const acrescentaIdentificadorDeTabs= ()=>{
@@ -764,3 +760,8 @@ const imprimeArquivo = () => {
 }
 
 imprimeArquivo();
+
+
+};
+
+compiladorAguardaPromises();
