@@ -265,6 +265,7 @@ const leLiteral = () => {
 }
 
 const leOPA = () => {
+  simbolo = ch;
   adicionaToken(retornaOPA());
   !digitos.includes(prox) ? leErro(97) : avançaCursorEAtualizaCaracter();
 }
@@ -274,17 +275,26 @@ const leOPR = () => {
     if (prox === '-') {
       adicionaTokenEAvança(retornaATR());
       avançaCursorEAtualizaCaracter();
-    } else if (prox === '>'||prox === '=') {
+    } else if (prox === '>') {
+      simbolo = '>';
+      adicionaTokenEAvança(retornaOPR());
+      avançaCursorEAtualizaCaracter();
+    } else if (prox === '=') {
+      simbolo = '<=';
       adicionaTokenEAvança(retornaOPR());
       avançaCursorEAtualizaCaracter();
     } else {
+      simbolo = '<';
       adicionaTokenEAvança(retornaOPR());
+      avançaCursorEAtualizaCaracter()
     }
   } else { 
     if (prox === '=') {
+      simbolo = '=';
       adicionaTokenEAvança(retornaOPR());
       avançaCursorEAtualizaCaracter();
     } else {
+      simbolo = '>=';
       adicionaTokenEAvança(retornaOPR());
     }
   }
@@ -360,6 +370,7 @@ let flagError = false;
 let identificadorDeTabs = 1;
 let corpoDoTexto = [];
 let linhaDotexto = '';
+let tokenTerminal;
 
 //Tokes para a validação do semântico
 let tokensSemantico = [];
@@ -417,6 +428,7 @@ const consultaTabelaTerminais = (classe) => {
 }
 
 const consultaTabelaNãoTerminais = () => {
+
   return GOTO(tabelaNãoTerminais[retornaSegundoDaPilha()][retornaTopoPilha()]);
 }
 
@@ -428,7 +440,7 @@ const shift = (classeToken, estado) => {
   empilha(classeToken);
   empilha(parseInt(estado));
   empilhaSemantico(token);
-  token = getToken();
+  //token = getToken();
 };
 
 const salvaRedução = (regraGramatical) => {
@@ -442,11 +454,26 @@ const imprimeSintático = () => {
 
 const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
-} 
+}
+
+const processaToken = () =>{
+
+  if (tokenTerminal.Classe == 'lit')
+    tokenTerminal.Tipo = 'literal'
+  else if (tokenTerminal.Classe == 'inteiro')
+    tokenTerminal.Tipo = 'int'
+  else if (tokenTerminal.Classe == 'real')
+    tokenTerminal.Tipo = 'real'
+  else if (tokenTerminal.Classe == 'opr')
+    tokenTerminal.Tipo = tokenTerminal.Lexema;
+  else if (tokenTerminal.Classe == 'atr')
+    tokenTerminal.Tipo = '=';
+}
 
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  imprimeToken(regraGramatical);
+  
+  tokenTerminal = {Classe: "", Lexema: "", Tipo: ""};
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
   
@@ -460,7 +487,7 @@ const analisadorSemantico = (regraGramatical) => {
 
     // D -> TIPO L pt_v
     case 6:
-      
+      //imprimeToken(regraGramatical);
       //let TIPO,L,pt_v = retornaTopoPilha();
       
       // linhaDeImpressão = TIPO.tipo + L.tipo;
@@ -514,11 +541,15 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ES -> escreva ARG pt_v
     case 14:
+      
       break;
 
 
     // ARG -> lit
     case 15:
+      tokenTerminal = tokensSemantico.shift();
+      processaToken();
+      empilhaSemantico(tokenTerminal);
       break;
 
 
@@ -617,9 +648,9 @@ const redução = (numeroRegra) => {
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
-  consultaTabelaNãoTerminais();
+  
   analisadorSemantico(regraGramatical);
-  imprimeToken(regraGramatical);
+  consultaTabelaNãoTerminais();
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -647,11 +678,29 @@ const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
 
 const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
-const empilhaSemantico = (token) => montaToken.push(token);
+const empilhaSemantico = (tokenp) => montaToken.push(tokenp);
+
+const imprimeToken = (regraGramatical) => {
+  console.log("\n\ni----------------------------------");
+  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
+
+  console.log(tokensSemantico.length);
+
+  for (i = 0; i < tokensSemantico.length; i++) {
+      console.log(`tokenClasse: ${tokensSemantico[i].Classe}, tokenLexema: ${tokensSemantico[i].Lexema}, tokenTipo: ${tokensSemantico[i].Tipo}, `);
+  }
+  console.log("f----------------------------------\n\n");
+}
+
 
 const desempilha = (quantiaReduzida) => {
+  let auxiliar;
   while (quantiaReduzida--) {
     pilha.pop();
+    
+    auxiliar = montaToken.shift();
+    if (auxiliar!= undefined)
+      tokensSemantico.push(auxiliar);
   }
 };
 
@@ -659,17 +708,6 @@ const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
 };
 
-const imprimeToken = (regraGramatical) => {
-  console.log("\n\ni----------------------------------");
-  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
-
-  console.log(montaToken.length);
-  for (i = 0; i < montaToken.length; i++) {
-    console.log(`tokenClasse: ${montaToken[i].Classe}, tokenLexema: ${montaToken[i].Lexema}, tokenTipo: ${montaToken[i].Tipo}, `);
-  }
-  console.log("f----------------------------------\n\n");
-  montaToken = [];
-}
 
 let token = getToken();
 
@@ -678,7 +716,7 @@ do {
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
 
-imprimeSintático();
+//imprimeSintático();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
