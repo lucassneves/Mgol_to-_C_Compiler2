@@ -364,17 +364,20 @@ let fimAnaliseSintatica = false;
 let tabelaRedução = [];
 let inicializouArquivo = false;
 
-let numeroDeTemporarias = 0;
-let listaDeVariavelTemporarias = [];
+let variaveisTemporarias = [];
+
 let flagError = false;
 let identificadorDeTabs = 1;
+
+//Impressão do texto
 let corpoDoTexto = [];
 let linhaDotexto = '';
-let tokenTerminal;
+
 
 //Tokes para a validação do semântico
 let tokensSemantico = [];
 let montaToken = [];
+let tokenTerminal;
 
 const getToken = () => {
   if (tabelaTokens.length > 0) {
@@ -456,7 +459,7 @@ const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
 }
 
-const processaToken = () =>{
+const ajustaTokenTerminal = () =>{
 
   if (tokenTerminal.Classe == 'lit')
     tokenTerminal.Tipo = 'literal'
@@ -472,7 +475,6 @@ const processaToken = () =>{
 
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  
   tokenTerminal = {Classe: "", Lexema: "", Tipo: ""};
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
@@ -480,7 +482,7 @@ const analisadorSemantico = (regraGramatical) => {
   switch (regraGramatical.numero) {
     // LV -> varfim pt_v
     case 5:
-      linhaDeImpressão = "\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
+      linhaDeImpressão = "Lucas\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
       acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
@@ -548,7 +550,7 @@ const analisadorSemantico = (regraGramatical) => {
     // ARG -> lit
     case 15:
       tokenTerminal = tokensSemantico.shift();
-      processaToken();
+      ajustaTokenTerminal();
       empilhaSemantico(tokenTerminal);
       break;
 
@@ -576,6 +578,24 @@ const analisadorSemantico = (regraGramatical) => {
 
     // LD -> OPRD opa OPRD
     case 20:
+      
+      // let tokenTemp1 = tokensSemantico.shift();
+      // let opa = tokensSemantico.shift();
+      // let tokenTemp2 = tokensSemantico.shift();
+
+      // if ((tokenTemp1.Tipo == tokenTemp2.Tipo || (tokenTemp1.Tipo == 'int' && tokenTemp2.Tipo == 'real' )
+      // || (tokenTemp1.Tipo == 'real' && tokenTemp2.Tipo == 'int' ) ) && (tokenTemp1 != 'literal')){
+        
+      //   acrecentaVariavelTemporaria()
+      //   tokenTerminal.Lexema = " T" + variaveisTemporarias.length;
+
+      // } else{
+      //   //caso de erro
+      // }
+      
+      // empilhaSemantico(tokenTerminal);
+      // imprimeToken(regraGramatical);
+      
       break;
 
 
@@ -641,6 +661,8 @@ const analisadorSemantico = (regraGramatical) => {
     default:
       break;
   }
+
+  
 }
 
 const redução = (numeroRegra) => {
@@ -716,7 +738,7 @@ do {
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
 
-//imprimeSintático();
+imprimeSintático();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -725,9 +747,9 @@ do {
 ////////////////////////////////////////////////////////////////////////////////
 
 const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
-  listaDeVariavelTemporarias.push(variavelTemporaria.tipo + " T" + listaDeVariavelTemporarias.length + ";");
+  variaveisTemporarias.push(variavelTemporaria.Tipo + " T" + variaveisTemporarias.length + ";");
   // ou
-  //listaDeVariavelTemporarias.push(tipo + " T" + listaDeVariavelTemporarias.length + ";");
+  //variaveisTemporarias.push(tipo + " T" + variaveisTemporarias.length + ";");
 };
 
 const inicializaArquivo = () => {
@@ -781,12 +803,12 @@ const escreveNoArquivo = (texto) => {
 const imprimeArquivo = () => {
   inicializaArquivo();
 
-  for (var i = 0;i < numeroDeTemporarias ; i++)
-    escreveNoArquivo(variavelTemporarias[i]);
+  for (var i = 0;i < variaveisTemporarias.length; i++)
+    escreveNoArquivo(variaveisTemporarias[i]);
 
   escreveNoArquivo("\t/*------------------------------*/\n");
   
-  // imprimeCorpoDoTextoNoarquivo();
+  imprimeCorpoDoTextoNoarquivo();
   
   escreveNoArquivo("}\n");
 }
