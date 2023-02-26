@@ -362,7 +362,6 @@ let pilha = [estadoInicial];
 
 let fimAnaliseSintatica = false;
 let tabelaRedução = [];
-let inicializouArquivo = false;
 
 let variaveisTemporarias = [];
 
@@ -375,7 +374,7 @@ let linhaDotexto = '';
 
 
 //Tokes para a validação do semântico
-let tokensSemantico = [];
+let pilhaSemantica = [];
 let montaToken = [];
 let tokenTerminal;
 
@@ -427,7 +426,9 @@ const getRegraGramatical = (numeroRegra) => {
 }
 
 const consultaTabelaTerminais = (classe) => {
-  return tabelaTerminais[retornaTopoPilha()][classe];
+  let topo = tabelaTerminais[retornaTopoPilha()][classe];
+  //console.log(topo);
+  return topo;
 }
 
 const consultaTabelaNãoTerminais = () => {
@@ -439,10 +440,12 @@ const GOTO = (estado) => {
 }
 
 const shift = (classeToken, estado) => {
+  console.log("--Shift-------------------------------");
   empilha(classeToken);
   empilha(parseInt(estado));
   empilhaSemantico(token);
-  //token = getToken();
+  imprimeToken();
+  
 };
 
 const salvaRedução = (regraGramatical) => {
@@ -490,10 +493,10 @@ const escreveNoArquivo = (texto) => {
 
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  tokenTerminal = {Classe: "asd", Lexema: "", Tipo: ""};
+  //imprimeToken(regraGramatical);
+  tokenTerminal = pilhaSemantica.pop();
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
-  
   switch (regraGramatical.numero) {
     // LV -> varfim pt_v
     case 5:
@@ -504,28 +507,28 @@ const analisadorSemantico = (regraGramatical) => {
 
     // D -> TIPO L pt_v
     case 6:
-      let case6token1 = tokensSemantico.pop();
-      let case6token2 = tokensSemantico.pop();
-      let case6token3 = tokensSemantico.pop();
-      console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
+      // let case6token1 = pilhaSemantica.pop();
+      // let case6token2 = pilhaSemantica.pop();
+      // let case6token3 = pilhaSemantica.pop();
+      // console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
 
-      atualizaTabelaSimbolos(case6token3, case6token2.Tipo);
-      console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token3)]);
-      linhaDeImpressão = `${case6token3.Tipo} ${case6token2.Lexema};`;
-      //let TIPO,L,pt_v = retornaTopoPilha();
+      // atualizaTabelaSimbolos(case6token3, case6token2.Tipo);
+      // console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token3)]);
+      // linhaDeImpressão = `${case6token3.Tipo} ${case6token2.Lexema};`;
+      // //let TIPO,L,pt_v = retornaTopoPilha();
       
-      // linhaDeImpressão = TIPO.tipo + L.tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
-      imprimeToken(regraGramatical);
+      // // linhaDeImpressão = TIPO.tipo + L.tipo;
+      // acrescentaCorpoDoTexto(linhaDeImpressão);
+      //imprimeToken(regraGramatical);
       break;
 
 
     // L -> id vir L
     case 7:
       /*
-      let case7token1 = tokensSemantico.pop();
-      let case7vir = tokensSemantico.pop();
-      let case7token2 = tokensSemantico.pop();
+      let case7token1 = pilhaSemantica.pop();
+      let case7vir = pilhaSemantica.pop();
+      let case7token2 = pilhaSemantica.pop();
       console.log(`case7token2:`, case7token2);
       // atualizaTabelaSimbolos(case7token1, case7token2.Tipo);
       // console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case7token1)]);
@@ -538,7 +541,7 @@ const analisadorSemantico = (regraGramatical) => {
     // L -> id
     case 8:
       /*
-      let case8token = tokensSemantico.pop();
+      let case8token = pilhaSemantica.pop();
       console.log(`token:`, case8token);
       */
       break;
@@ -546,31 +549,31 @@ const analisadorSemantico = (regraGramatical) => {
 
     // TIPO -> inteiro
     case 9:
-      let case9temp = tokensSemantico.pop();
-      tokenTerminal.Tipo = case9temp.Tipo;
-      empilhaSemantico(tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
+      // let case9temp = pilhaSemantica.pop();
+      // tokenTerminal.Tipo = case9temp.Tipo;
+      // empilhaSemantico(tokenTerminal);
+      // linhaDeImpressão = tokenTerminal.Tipo;
+      // acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
     // TIPO -> real
     case 10:
-      let case10temp = tokensSemantico.pop();
-      tokenTerminal.Tipo = case10temp.Tipo;
-      empilhaSemantico(tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
+      // let case10temp = pilhaSemantica.pop();
+      // tokenTerminal.Tipo = case10temp.Tipo;
+      // empilhaSemantico(tokenTerminal);
+      // linhaDeImpressão = tokenTerminal.Tipo;
+      // acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
     // TIPO -> literal
     case 11:
-      let case11temp = tokensSemantico.pop();
-      tokenTerminal.Tipo = case11temp.Tipo;
-      empilhaSemantico(tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
+      // let case11temp = pilhaSemantica.pop();
+      // tokenTerminal.Tipo = case11temp.Tipo;
+      // empilhaSemantico(tokenTerminal);
+      // linhaDeImpressão = tokenTerminal.Tipo;
+      // acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
       
 
@@ -602,7 +605,7 @@ const analisadorSemantico = (regraGramatical) => {
     // ARG -> lit
     case 15:
 
-      tokenTerminal = tokensSemantico.pop();
+      //tokenTerminal = pilhaSemantica.pop();
       ajustaTokenTerminal();
       
 
@@ -633,9 +636,9 @@ const analisadorSemantico = (regraGramatical) => {
     // LD -> OPRD opa OPRD
     case 20:
       
-      // let tokenTemp1 = tokensSemantico.shift();
-      // let opa = tokensSemantico.shift();
-      // let tokenTemp2 = tokensSemantico.shift();
+      // let tokenTemp1 = pilhaSemantica.shift();
+      // let opa = pilhaSemantica.shift();
+      // let tokenTemp2 = pilhaSemantica.shift();
 
       // if ((tokenTemp1.Tipo == tokenTemp2.Tipo || (tokenTemp1.Tipo == 'int' && tokenTemp2.Tipo == 'real' )
       // || (tokenTemp1.Tipo == 'real' && tokenTemp2.Tipo == 'int' ) ) && (tokenTemp1 != 'literal')){
@@ -716,17 +719,26 @@ const analisadorSemantico = (regraGramatical) => {
       break;
   }
 
-  
 }
 
 const redução = (numeroRegra) => {
+  console.log("--Redução--------------------------------");
   let regraGramatical = getRegraGramatical(numeroRegra);
+  console.log("Reduzindo em: " +  regraGramatical.reduz+" a Tp: "+pilhaSemantica.length);
+  console.log("Regra: " + regraGramatical.regra + "");
+
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
+
   
   analisadorSemantico(regraGramatical);
+  
+  desempilhaSemantica(regraGramatical.reduz);
+  empilhaSemantico(tokenTerminal);
   consultaTabelaNãoTerminais(numeroRegra);
+  imprimeToken();
+
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -754,31 +766,32 @@ const retornaSegundoDaPilha = () => pilha[pilha.length - 2];
 
 const empilha = (tokenOuEstado) => pilha.push(tokenOuEstado);
 
-const empilhaSemantico = (tokenp) => montaToken.push(tokenp);
+const empilhaSemantico = (tokenp) => pilhaSemantica.push(tokenp);
 
-const imprimeToken = (regraGramatical) => {
-  console.log("\n\ni----------------------------------");
-  console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
+const imprimeToken = () => {
+  //console.log("\n\ni----------------------------------");
+  //console.log(`regraGramatical: ${regraGramatical.regra}, numero: ${regraGramatical.numero}`);
 
-  console.log(tokensSemantico.length);
+  console.log("Tpilha: "+pilhaSemantica.length);
 
-  for (i = 0; i < tokensSemantico.length; i++) {
-      console.log(`tokenClasse: ${tokensSemantico[i].Classe}, tokenLexema: ${tokensSemantico[i].Lexema}, tokenTipo: ${tokensSemantico[i].Tipo}, `);
+  for (i = 0; i < pilhaSemantica.length; i++) {
+      console.log(`tokenClasse: ${pilhaSemantica[i].Classe}, tokenLexema: ${pilhaSemantica[i].Lexema}, tokenTipo: ${pilhaSemantica[i].Tipo}, `);
   }
-  console.log("f----------------------------------\n\n");
+  //console.log("f----------------------------------");
 }
 
 
 const desempilha = (quantiaReduzida) => {
-  let auxiliar;
   while (quantiaReduzida--) {
     pilha.pop();
-    
-    auxiliar = montaToken.pop();
-    if (auxiliar!= undefined)
-      tokensSemantico.push(auxiliar);
   }
 };
+
+const desempilhaSemantica = (quantiaReduzida) =>{
+  while (quantiaReduzida--) {
+    pilhaSemantica.pop();
+  }
+}
 
 const retornaAção = () => {
   return tabelaCanonicaTerminais[retornaTopoPilha()][token.Classe]; 
