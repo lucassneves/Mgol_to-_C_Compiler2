@@ -459,6 +459,15 @@ const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
 }
 
+const retornaIndiceTabelaSimbolos = (token) => {
+  let tokenRetornado = tabelaSimbolos.find(tokenTabela => tokenTabela.Lexema === token.Lexema);
+  return tabelaSimbolos.indexOf(tokenRetornado);
+}
+
+const atualizaTabelaSimbolos = (token, tipo) => {
+  tabelaSimbolos[retornaIndiceTabelaSimbolos(token)].Tipo = tipo;
+}
+
 const ajustaTokenTerminal = () =>{
 
   if (tokenTerminal.Classe == 'lit')
@@ -482,14 +491,22 @@ const analisadorSemantico = (regraGramatical) => {
   switch (regraGramatical.numero) {
     // LV -> varfim pt_v
     case 5:
-      linhaDeImpressão = "Lucas\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
+      linhaDeImpressão = "\n\n"; // "juntando 2 \n com o \n padrão é  = 3 
       acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
     // D -> TIPO L pt_v
     case 6:
-      //imprimeToken(regraGramatical);
+      let case6token1 = tokensSemantico.pop();
+      let case6token2 = tokensSemantico.pop();
+      let case6token3 = tokensSemantico.pop();
+
+      atualizaTabelaSimbolos(case6token2, case6token3.Tipo);
+      console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token2)]);
+      linhaDeImpressão = `${case6token3.Tipo} ${case6token2.Lexema};`;
+      console.log(linhaDeImpressão);
+      // console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token2)]);
       //let TIPO,L,pt_v = retornaTopoPilha();
       
       // linhaDeImpressão = TIPO.tipo + L.tipo;
@@ -499,6 +516,15 @@ const analisadorSemantico = (regraGramatical) => {
 
     // L -> id vir L
     case 7:
+      let case7token1 = tokensSemantico.pop();
+      let case7vir = tokensSemantico.pop();
+      let case7token2 = tokensSemantico.pop();
+
+      atualizaTabelaSimbolos(case7token1, case7token2.Tipo);
+      // console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case7token1)]);
+
+      // imprimeToken(regraGramatical);
+
       break;
 
 
@@ -549,9 +575,11 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ARG -> lit
     case 15:
+      /*
       tokenTerminal = tokensSemantico.shift();
       ajustaTokenTerminal();
       empilhaSemantico(tokenTerminal);
+      */
       break;
 
 
@@ -720,7 +748,7 @@ const desempilha = (quantiaReduzida) => {
   while (quantiaReduzida--) {
     pilha.pop();
     
-    auxiliar = montaToken.shift();
+    auxiliar = montaToken.pop();
     if (auxiliar!= undefined)
       tokensSemantico.push(auxiliar);
   }
@@ -761,33 +789,36 @@ const inicializaArquivo = () => {
   inicializouArquivo = true;
 }
 
-const acrescentaIdentificadorDeTabs= ()=>{
+const acrescentaIdentificadorDeTabs= () => {
   identificadorDeTabs = identificadorDeTabs +1;
 }
 
-const decresceIdentificadorDeTabs= ()=>{
+const decresceIdentificadorDeTabs= () => {
   identificadorDeTabs = identificadorDeTabs -1;
 }
 
-const imprimeTabs = ()=>{
+const imprimeTabs = () => {
   for (i = 0; i < identificadorDeTabs; i++)
-    println("\t");
+  escreveNoArquivo("\t");
 }
 
 const imprimeCorpoDoTextoNoarquivo = () => {
   for (let i=0; i < corpoDoTexto.length; i++){
     linhaDotexto = corpoDoTexto[i];
 
-    if (linhaDotexto.includes("}")){
+    if (typeof linhaDotexto !== 'undefined' && linhaDotexto.includes("}")){
       decresceIdentificadorDeTabs();
     }
 
     imprimeTabs();
+
+    if (typeof linhaDotexto !== 'undefined') {
+      escreveNoArquivo(linhaDotexto + "\n");
+    }
     
-    escreveNoArquivo(linhaDotexto+"\n");
     
     //Esta verificação precisa estar em baixo
-    if (linhaDotexto.includes("{")){
+    if (typeof linhaDotexto !== 'undefined' && linhaDotexto.includes("{")){
       acrescentaIdentificadorDeTabs();
     }
   }
