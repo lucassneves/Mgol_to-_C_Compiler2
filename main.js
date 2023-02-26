@@ -1,4 +1,5 @@
 const fs = require('fs');
+var logStream = fs.createWriteStream('PROGRAMA.c', {flags: 'w'});
 const path = require('path');
 
 async function compiladorAguardaPromises() {
@@ -445,6 +446,7 @@ const shift = (classeToken, estado) => {
   empilha(parseInt(estado));
   empilhaSemantico(token);
   
+  // token = getToken();
   //imprimeToken();
   
 };
@@ -460,7 +462,6 @@ const imprimeSintático = () => {
 
 const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
-  console.log('corpoDoTexto:', corpoDoTexto);
 }
 
 const concatenaCorpoDoTexto = (texto) => {
@@ -471,6 +472,10 @@ const retornaIndiceTabelaSimbolos = (token) => {
   let tokenRetornado = tabelaSimbolos.find(tokenTabela => tokenTabela.Lexema === token.Lexema);
   return tabelaSimbolos.indexOf(tokenRetornado);
 }
+
+const verificaIdNatabelaSimbolos = (token) => { }
+
+
 
 const atualizaTabelaSimbolos = (token, tipo) => {
   // console.log(tabelaSimbolos[retornaIndiceTabelaSimbolos(token)]);
@@ -488,9 +493,10 @@ const retornaTopoPilhaSemantica_IncrementaRetiradas = () => {
 }
 
 const ajustaTokenTerminal = () =>{
-
   if (tokenTerminal.Classe == 'lit')
     tokenTerminal.Tipo = 'literal'
+  else if (tokenTerminal.Classe == 'num')
+    tokenTerminal.Tipo = 'numeral'
   else if (tokenTerminal.Classe == 'inteiro')
     tokenTerminal.Tipo = 'int'
   else if (tokenTerminal.Classe == 'real')
@@ -502,9 +508,7 @@ const ajustaTokenTerminal = () =>{
 }
 
 const escreveNoArquivo = (texto) => {
-  fs.appendFile('PROGRAMA.c', texto, function(err) {
-    if (err) throw err;
-  });
+  logStream.write(texto);
 }
 
 const resetaContadorDeRetiradas = () => contadorDeRetiradas = 0;
@@ -514,6 +518,7 @@ const analisadorSemantico = (regraGramatical) => {
   resetaContadorDeRetiradas();
   
   //guarda infomração do ultimo token
+  //tokenTerminal = token;
   tokenTerminal = pilhaSemantica[pilhaSemantica.length -1];
 
   switch (regraGramatical.numero) {
@@ -525,35 +530,21 @@ const analisadorSemantico = (regraGramatical) => {
 
     // D -> TIPO L pt_v
     case 6:
-      let case6token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case6token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      case6token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case6token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       // imprimeRegra(regraGramatical);
       // console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
-
       atualizaTabelaSimbolos(case6token2, case6token3.Tipo);
-      console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token2)]);
-      // linhaDeImpressão = `${case6token3.Tipo} ${case6token2.Lexema};`;
-      // //let TIPO,L,pt_v = retornaTopoPilha();
-      
-      // // linhaDeImpressão = TIPO.tipo + L.tipo;
-      // acrescentaCorpoDoTexto(linhaDeImpressão);
-      
-      // imprimeToken();
       break;
-
 
     // L -> id vir L
     case 7:
       let case7token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
-      let case7token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case7token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      case7token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       // imprimeRegra(regraGramatical);
-      // console.log('token1:', case7token1, 'token2:', case7token2, 'token3:', case7token3);
-      // atualizaTabelaSimbolos(case7token1, case7token2.Tipo);
-      // console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case7token1)]);
-
-      // imprimeToken(regraGramatical);
+      atualizaTabelaSimbolos(case7token1, case7token3.Tipo);
       // imprimeRegra(regraGramatical);
       // imprimeToken();
       break;
@@ -564,6 +555,7 @@ const analisadorSemantico = (regraGramatical) => {
 
       let case8token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case8token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+
       if (case8token2.Classe === 'vir') {
         let case8token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
         let case8token4 = retornaTopoPilhaSemantica_IncrementaRetiradas();
@@ -573,22 +565,23 @@ const analisadorSemantico = (regraGramatical) => {
         atualizaTabelaSimbolos(case8token1, case8token4.Tipo);
         atualizaTokenPilhaTipo(pilhaSemantica.length - 1, tokenTerminal);
         atualizaTokenPilhaTipo(pilhaSemantica.length - 3, case8token3);
-        console.log('token3:', case8token3, 'token4:', case8token4);
-        concatenaCorpoDoTexto(case8token1.Lexema + ', ' + case8token3.Lexema + ';');
+        //console.log('token3:', case8token3, 'token4:', case8token4);
+        concatenaCorpoDoTexto(case8token3.Lexema + ', ' + case8token1.Lexema + ';');
       } else {
         tokenTerminal.Tipo = case8token2.Tipo;
         atualizaTabelaSimbolos(case8token1, tokenTerminal.Tipo);
         concatenaCorpoDoTexto(case8token1.Lexema + ';');
       }
-      console.log('token1:', case8token1, 'token2:', case8token2);
+      //console.log('token1:', case8token1, 'token2:', case8token2);
       break;
 
 
     // TIPO -> inteiro
     case 9:
+
       tokenTerminal.Tipo = 'inteiro';
       atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
+      linhaDeImpressão = 'int';
       // console.log('linhaDeImpressao caso 9:', linhaDeImpressão);
       acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
@@ -598,7 +591,7 @@ const analisadorSemantico = (regraGramatical) => {
       case 10:
         tokenTerminal.Tipo = 'real';
         atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
-        linhaDeImpressão = tokenTerminal.Tipo;
+        linhaDeImpressão = 'double';
         // console.log('linhaDeImpressao caso 10:', linhaDeImpressão);
         acrescentaCorpoDoTexto(linhaDeImpressão);
         break;
@@ -612,40 +605,54 @@ const analisadorSemantico = (regraGramatical) => {
           // console.log('linhaDeImpressao caso 11:', linhaDeImpressão);
           acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
-      
-
-    // A -> ES A
-    case 12:
-      break;
 
 
     // ES -> leia id pt_v  
     case 13:
-      /*id  = retornaTopoPilha();
-      //id =  retornaSegundoDaPilha();
-      if (id == "literal")
-        linhaDeImpressão = "scanf(“%s”, id.lexema);";
-      else if (id == "inteiro")  
-        linhaDeImpressão = "scanf(“%d”, &id.lexema);";
-      else if (id == "real")  
-        linhaDeImpressão = "scanf(“%lf”, &id.lexema);";
-      acrescentaCorpoDoTexto(linhaDeImpressão);*/
+      let id = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      id = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      
+      if (typeof id.Tipo !== undefined){
+        if (id.Tipo == "literal")
+          linhaDeImpressão = `scanf("%s", ${id.Lexema});`;
+        else if (id.Tipo == "inteiro")  
+          linhaDeImpressão = `scanf("%d", &${id.Lexema});`;
+        else if (id.Tipo == "real")  
+          linhaDeImpressão = `scanf("%lf", &${id.Lexema});`;
+        acrescentaCorpoDoTexto(linhaDeImpressão);
+      } else{
+        console.log("Erro Semântico: Variável não declarada!\n");
+        flagError = true;
+      }
       break;
 
 
     // ES -> escreva ARG pt_v
     case 14:
-      
-      break;
+      // imprimeRegra(regraGramatical);
+      // imprimeToken();
 
+      let case14token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      case14token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+
+      if (case14token1.Classe === 'id'){
+        if (case14token1.Tipo == 'literal'){
+          linhaDeImpressão = `printf("%s", ${case14token1.Lexema});`;
+        } else if (case14token1.Tipo == 'inteiro'){
+          linhaDeImpressão = `printf("%d", ${case14token1.Lexema});`;
+        } else if (case14token1.Tipo == 'real'){
+          linhaDeImpressão = `printf("%lf", ${case14token1.Lexema});`;
+        }
+        acrescentaCorpoDoTexto(linhaDeImpressão);
+      }else if (case14token1.Classe === 'lit'){
+        linhaDeImpressão = `printf(${case14token1.Lexema});`;
+        acrescentaCorpoDoTexto(linhaDeImpressão);
+      }
+      break;
 
     // ARG -> lit
     case 15:
-
-      //tokenTerminal = pilhaSemantica.pop();
       ajustaTokenTerminal();
-      
-
       break;
 
 
@@ -654,20 +661,25 @@ const analisadorSemantico = (regraGramatical) => {
       ajustaTokenTerminal();
       break;
 
-
     // ARG -> id
     case 17:
       // tabelaSimbolos.find()
+      ajustaTokenTerminal();
       break;
-
-
-    // A -> CMD A
-    case 18:
-      break;
-
 
     // CMD -> id atr LD pt_v
     case 19:
+
+      imprimeRegra(regraGramatical);
+      imprimeToken();
+      
+      let case19token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      case19token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      let case19token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      let case19token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      console.log('token1:', case19token1, '\ntoken2:', case19token2, '\ntoken3:', case19token3);
+
+      if (validaIDtabelaDe (case19token3.Lexema)
       break;
 
 
@@ -765,13 +777,12 @@ const redução = (numeroRegra) => {
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
+  consultaTabelaNãoTerminais(numeroRegra);
 
   analisadorSemantico(regraGramatical);
   
   desempilhaSemantica(regraGramatical.reduz/2);
   empilhaSemantico(tokenTerminal);
-
-  consultaTabelaNãoTerminais(numeroRegra);
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -813,7 +824,7 @@ const imprimeToken = () => {
   //console.log("f----------------------------------");
 }
 
-const imprimeRegra = (regraGramatical) =>{
+const imprimeRegra = (regraGramatical) => {
   console.log("--Redução--------------------------------");
   //console.log("Reduzido em: " +  regraGramatical.reduz/2+" a TdP: "+pilhaSemantica.length);
   console.log("Regra: " + regraGramatical.regra + "");
@@ -844,7 +855,7 @@ do {
   realizaAção(ação);
 } while (!fimAnaliseSintatica);
 
-imprimeSintático();
+// imprimeSintático();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -859,12 +870,7 @@ const acrecentaVariavelTemporaria = (variavelTemporaria)=>{
 };
 
 const inicializaArquivo = () => {
-  fs.writeFile('PROGRAMA.c', "#include<stdio.h>\n\ntypedef char literal[256];\nvoid main(void)\n{\t/*----Variaveis temporarias----*/\n", (err) => {
-    if (err)
-      throw err;
-    }
-  );
-  inicializouArquivo = true;
+  logStream.write("#include<stdio.h>\n\ntypedef char literal[256];\nvoid main(void)\n{\t/*----Variaveis temporarias----*/\n");
 }
 
 const acrescentaIdentificadorDeTabs= () => {
@@ -888,9 +894,9 @@ const imprimeCorpoDoTextoNoarquivo = () => {
     if (typeof linhaDotexto !== 'undefined' && linhaDotexto.includes("}")){
       decresceIdentificadorDeTabs();
     }
-
+    
     imprimeTabs();
-
+    
     if (typeof linhaDotexto !== 'undefined') {
       escreveNoArquivo(linhaDotexto + "\n");
     }
@@ -920,8 +926,7 @@ const imprimeArquivo = () => {
 }
 
 imprimeArquivo();
-
-
+logStream.end();
 };
 
 compiladorAguardaPromises();
