@@ -431,7 +431,6 @@ const consultaTabelaTerminais = (classe) => {
 }
 
 const consultaTabelaNãoTerminais = () => {
-
   return GOTO(tabelaNãoTerminais[retornaSegundoDaPilha()][retornaTopoPilha()]);
 }
 
@@ -465,7 +464,8 @@ const retornaIndiceTabelaSimbolos = (token) => {
 }
 
 const atualizaTabelaSimbolos = (token, tipo) => {
-  tabelaSimbolos[retornaIndiceTabelaSimbolos(token)].Tipo = tipo;
+  console.log(tabelaSimbolos[retornaIndiceTabelaSimbolos(token)]);
+  // tabelaSimbolos[retornaIndiceTabelaSimbolos(token)].Tipo = tipo;
 }
 
 const ajustaTokenTerminal = () =>{
@@ -482,9 +482,15 @@ const ajustaTokenTerminal = () =>{
     tokenTerminal.Tipo = '=';
 }
 
+const escreveNoArquivo = (texto) => {
+  fs.appendFile('PROGRAMA.c', texto, function(err) {
+    if (err) throw err;
+  });
+}
+
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  tokenTerminal = {Classe: "", Lexema: "", Tipo: ""};
+  tokenTerminal = {Classe: "asd", Lexema: "", Tipo: ""};
   // let tokenP = retornaTopoPilha();
   // console.log("Topo da pilha: "+ tokenP.toString());
   
@@ -501,50 +507,70 @@ const analisadorSemantico = (regraGramatical) => {
       let case6token1 = tokensSemantico.pop();
       let case6token2 = tokensSemantico.pop();
       let case6token3 = tokensSemantico.pop();
+      console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
 
-      atualizaTabelaSimbolos(case6token2, case6token3.Tipo);
-      console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token2)]);
+      atualizaTabelaSimbolos(case6token3, case6token2.Tipo);
+      console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token3)]);
       linhaDeImpressão = `${case6token3.Tipo} ${case6token2.Lexema};`;
-      console.log(linhaDeImpressão);
-      // console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token2)]);
       //let TIPO,L,pt_v = retornaTopoPilha();
       
       // linhaDeImpressão = TIPO.tipo + L.tipo;
       acrescentaCorpoDoTexto(linhaDeImpressão);
+      imprimeToken(regraGramatical);
       break;
 
 
     // L -> id vir L
     case 7:
+      /*
       let case7token1 = tokensSemantico.pop();
       let case7vir = tokensSemantico.pop();
       let case7token2 = tokensSemantico.pop();
-
-      atualizaTabelaSimbolos(case7token1, case7token2.Tipo);
+      console.log(`case7token2:`, case7token2);
+      // atualizaTabelaSimbolos(case7token1, case7token2.Tipo);
       // console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case7token1)]);
 
       // imprimeToken(regraGramatical);
-
+*/
       break;
 
 
     // L -> id
     case 8:
+      /*
+      let case8token = tokensSemantico.pop();
+      console.log(`token:`, case8token);
+      */
       break;
 
 
     // TIPO -> inteiro
     case 9:
+      let case9temp = tokensSemantico.pop();
+      tokenTerminal.Tipo = case9temp.Tipo;
+      empilhaSemantico(tokenTerminal);
+      linhaDeImpressão = tokenTerminal.Tipo;
+      acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
     // TIPO -> real
     case 10:
+      let case10temp = tokensSemantico.pop();
+      tokenTerminal.Tipo = case10temp.Tipo;
+      empilhaSemantico(tokenTerminal);
+      linhaDeImpressão = tokenTerminal.Tipo;
+      acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
 
 
     // TIPO -> literal
     case 11:
+      let case11temp = tokensSemantico.pop();
+      tokenTerminal.Tipo = case11temp.Tipo;
+      empilhaSemantico(tokenTerminal);
+      linhaDeImpressão = tokenTerminal.Tipo;
+      acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
       
 
@@ -575,11 +601,11 @@ const analisadorSemantico = (regraGramatical) => {
 
     // ARG -> lit
     case 15:
-      /*
-      tokenTerminal = tokensSemantico.shift();
+
+      tokenTerminal = tokensSemantico.pop();
       ajustaTokenTerminal();
-      empilhaSemantico(tokenTerminal);
-      */
+      
+
       break;
 
 
@@ -700,7 +726,7 @@ const redução = (numeroRegra) => {
   salvaRedução(regraGramatical);
   
   analisadorSemantico(regraGramatical);
-  consultaTabelaNãoTerminais();
+  consultaTabelaNãoTerminais(numeroRegra);
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -824,11 +850,7 @@ const imprimeCorpoDoTextoNoarquivo = () => {
   }
 }
 
-const escreveNoArquivo = (texto) => {
-  fs.appendFile('PROGRAMA.c', texto, function(err) {
-    if (err) throw err;
-  });
-}
+
 
 
 const imprimeArquivo = () => {
