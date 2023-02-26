@@ -460,6 +460,7 @@ const imprimeSintático = () => {
 
 const acrescentaCorpoDoTexto = (texto) => {
   corpoDoTexto.push(texto);
+  console.log('corpoDoTexto:', corpoDoTexto);
 }
 
 const concatenaCorpoDoTexto = (texto) => {
@@ -561,11 +562,10 @@ const analisadorSemantico = (regraGramatical) => {
     // L -> id
     case 8:
       let case8token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
-      // 
-      imprimeRegra(regraGramatical);
-      imprimeToken();
-
-
+      let case8token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      console.log('token1:', case8token1, 'token2:', case8token2);
+      tokenTerminal.Tipo = case8token2.Tipo;
+      atualizaTabelaSimbolos(case8token1, tokenTerminal.Tipo);
       break;
 
 
@@ -574,25 +574,28 @@ const analisadorSemantico = (regraGramatical) => {
       tokenTerminal.Tipo = 'inteiro';
       atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
       linhaDeImpressão = tokenTerminal.Tipo;
+      // console.log('linhaDeImpressao caso 9:', linhaDeImpressão);
       acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
-
-
-    // TIPO -> real
-    case 10:
-      tokenTerminal.Tipo = 'real';
-      atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
-      break;
-
-
-    // TIPO -> literal
-    case 11:
-      tokenTerminal.Tipo = 'literal';
-      atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
-      linhaDeImpressão = tokenTerminal.Tipo;
-      acrescentaCorpoDoTexto(linhaDeImpressão);
+      
+      
+      // TIPO -> real
+      case 10:
+        tokenTerminal.Tipo = 'real';
+        atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
+        linhaDeImpressão = tokenTerminal.Tipo;
+        // console.log('linhaDeImpressao caso 10:', linhaDeImpressão);
+        acrescentaCorpoDoTexto(linhaDeImpressão);
+        break;
+        
+        
+        // TIPO -> literal
+        case 11:
+          tokenTerminal.Tipo = 'literal';
+          atualizaTokenPilhaTipo(pilhaSemantica.length -1,tokenTerminal);
+          linhaDeImpressão = tokenTerminal.Tipo;
+          // console.log('linhaDeImpressao caso 11:', linhaDeImpressão);
+          acrescentaCorpoDoTexto(linhaDeImpressão);
       break;
       
 
@@ -747,13 +750,13 @@ const redução = (numeroRegra) => {
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
-  
+
   analisadorSemantico(regraGramatical);
   
   desempilhaSemantica(regraGramatical.reduz/2);
   empilhaSemantico(tokenTerminal);
-  consultaTabelaNãoTerminais(numeroRegra);
 
+  consultaTabelaNãoTerminais(numeroRegra);
 }
 
 const finalizaAnalisadorSintatico = () => {fimAnaliseSintatica = true;}
@@ -858,8 +861,9 @@ const decresceIdentificadorDeTabs= () => {
 }
 
 const imprimeTabs = () => {
-  for (i = 0; i < identificadorDeTabs; i++)
-  escreveNoArquivo("\t");
+  for (i = 0; i < identificadorDeTabs; i++) {
+    escreveNoArquivo("\t");
+  }
 }
 
 const imprimeCorpoDoTextoNoarquivo = () => {
