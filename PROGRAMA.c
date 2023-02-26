@@ -3,12 +3,11 @@
 typedef char literal[256];
 void main(void)
 {	/*----Variaveis temporarias----*/
-literal
-	/*------------------------------*/
-	real
-inteiro
+inteiro D, B;
+real C;
+		
 
 
-
-	}
+literal A;
+}
 		

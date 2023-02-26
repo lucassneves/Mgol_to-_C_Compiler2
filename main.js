@@ -561,11 +561,26 @@ const analisadorSemantico = (regraGramatical) => {
 
     // L -> id
     case 8:
+
       let case8token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case8token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      if (case8token2.Classe === 'vir') {
+        let case8token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+        let case8token4 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+        tokenTerminal.Tipo = case8token4.Tipo;
+        case8token3.Tipo = case8token4.Tipo;
+        atualizaTabelaSimbolos(case8token3, case8token4.Tipo);
+        atualizaTabelaSimbolos(case8token1, case8token4.Tipo);
+        atualizaTokenPilhaTipo(pilhaSemantica.length - 1, tokenTerminal);
+        atualizaTokenPilhaTipo(pilhaSemantica.length - 3, case8token3);
+        console.log('token3:', case8token3, 'token4:', case8token4);
+        concatenaCorpoDoTexto(case8token1.Lexema + ', ' + case8token3.Lexema + ';');
+      } else {
+        tokenTerminal.Tipo = case8token2.Tipo;
+        atualizaTabelaSimbolos(case8token1, tokenTerminal.Tipo);
+        concatenaCorpoDoTexto(case8token1.Lexema + ';');
+      }
       console.log('token1:', case8token1, 'token2:', case8token2);
-      tokenTerminal.Tipo = case8token2.Tipo;
-      atualizaTabelaSimbolos(case8token1, tokenTerminal.Tipo);
       break;
 
 
