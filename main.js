@@ -374,8 +374,8 @@ let linhaDotexto = '';
 
 
 //Tokes para a validação do semântico
+let contadorDeRetiradas = 0;
 let pilhaSemantica = [];
-let montaToken = [];
 let tokenTerminal;
 
 const getToken = () => {
@@ -440,11 +440,12 @@ const GOTO = (estado) => {
 }
 
 const shift = (classeToken, estado) => {
-  console.log("--Shift-------------------------------");
+  //console.log("--Shift-------------------------------");
   empilha(classeToken);
   empilha(parseInt(estado));
   empilhaSemantico(token);
-  imprimeToken();
+  
+  //imprimeToken();
   
 };
 
@@ -471,6 +472,12 @@ const atualizaTabelaSimbolos = (token, tipo) => {
   // tabelaSimbolos[retornaIndiceTabelaSimbolos(token)].Tipo = tipo;
 }
 
+const retornaTopoPilhaSemantica_IncrementaRetiradas = () => {
+  let ultimo =  pilhaSemantica[pilhaSemantica.length - (1 + contadorDeRetiradas )]
+  contadorDeRetiradas++;
+  return ultimo;
+}
+
 const ajustaTokenTerminal = () =>{
 
   if (tokenTerminal.Classe == 'lit')
@@ -493,10 +500,10 @@ const escreveNoArquivo = (texto) => {
 
 const analisadorSemantico = (regraGramatical) => {
   let linhaDeImpressão;
-  //imprimeToken(regraGramatical);
-  tokenTerminal = pilhaSemantica.pop();
-  // let tokenP = retornaTopoPilha();
-  // console.log("Topo da pilha: "+ tokenP.toString());
+  contadorDeRetiradas = 0;
+  //guarda infomração do ultimo token
+  tokenTerminal = pilhaSemantica[pilhaSemantica.length -1];
+
   switch (regraGramatical.numero) {
     // LV -> varfim pt_v
     case 5:
@@ -507,10 +514,10 @@ const analisadorSemantico = (regraGramatical) => {
 
     // D -> TIPO L pt_v
     case 6:
-      // let case6token1 = pilhaSemantica.pop();
-      // let case6token2 = pilhaSemantica.pop();
-      // let case6token3 = pilhaSemantica.pop();
-      // console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
+      let case6token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      let case6token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      let case6token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
+      console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
 
       // atualizaTabelaSimbolos(case6token3, case6token2.Tipo);
       // console.log('tokenAlterado caso6: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case6token3)]);
@@ -519,7 +526,9 @@ const analisadorSemantico = (regraGramatical) => {
       
       // // linhaDeImpressão = TIPO.tipo + L.tipo;
       // acrescentaCorpoDoTexto(linhaDeImpressão);
-      //imprimeToken(regraGramatical);
+      imprimeRegra(regraGramatical);
+      imprimeToken();
+      
       break;
 
 
@@ -534,7 +543,8 @@ const analisadorSemantico = (regraGramatical) => {
       // console.log('tokenAlterado caso7: ', tabelaSimbolos[retornaIndiceTabelaSimbolos(case7token1)]);
 
       // imprimeToken(regraGramatical);
-*/
+*/    imprimeRegra(regraGramatical);
+      imprimeToken();
       break;
 
 
@@ -722,22 +732,17 @@ const analisadorSemantico = (regraGramatical) => {
 }
 
 const redução = (numeroRegra) => {
-  console.log("--Redução--------------------------------");
   let regraGramatical = getRegraGramatical(numeroRegra);
-  console.log("Reduzindo em: " +  regraGramatical.reduz+" a Tp: "+pilhaSemantica.length);
-  console.log("Regra: " + regraGramatical.regra + "");
 
   desempilha(regraGramatical.reduz);
   empilha(regraGramatical.reduzPara);
   salvaRedução(regraGramatical);
+  analisadorSemantico(regraGramatical);
 
   
-  analisadorSemantico(regraGramatical);
-  
-  desempilhaSemantica(regraGramatical.reduz);
+  desempilhaSemantica(regraGramatical.reduz/2);
   empilhaSemantico(tokenTerminal);
   consultaTabelaNãoTerminais(numeroRegra);
-  imprimeToken();
 
 }
 
@@ -778,6 +783,12 @@ const imprimeToken = () => {
       console.log(`tokenClasse: ${pilhaSemantica[i].Classe}, tokenLexema: ${pilhaSemantica[i].Lexema}, tokenTipo: ${pilhaSemantica[i].Tipo}, `);
   }
   //console.log("f----------------------------------");
+}
+
+const imprimeRegra = (regraGramatical) =>{
+  console.log("--Redução--------------------------------");
+  console.log("Reduzido em: " +  regraGramatical.reduz/2+" a Tp: "+pilhaSemantica.length);
+  console.log("Regra: " + regraGramatical.regra + "");
 }
 
 
