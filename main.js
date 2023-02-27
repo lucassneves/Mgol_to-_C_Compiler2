@@ -519,6 +519,7 @@ const checaDisponibilidadeVariavelTemporaria = () => {
     }
   }
   console.log("Erro: Nenhuma variável temporaria disponivel");
+  flagError = true;
   return -1;
 }
 
@@ -574,8 +575,7 @@ const analisadorSemantico = (regraGramatical) => {
       let case6token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       case6token2 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case6token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
-      // imprimeRegra(regraGramatical);
-      // console.log('token1:', case6token1, 'token2:', case6token2, 'token3:', case6token3);
+  
       atualizaTabelaSimbolos(case6token2, case6token3.Tipo);
       break;
 
@@ -584,10 +584,7 @@ const analisadorSemantico = (regraGramatical) => {
       let case7token1 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       let case7token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
       case7token3 = retornaTopoPilhaSemantica_IncrementaRetiradas();
-      // imprimeRegra(regraGramatical);
       atualizaTabelaSimbolos(case7token1, case7token3.Tipo);
-      // imprimeRegra(regraGramatical);
-      // imprimeToken();
       break;
 
 
@@ -735,10 +732,12 @@ const analisadorSemantico = (regraGramatical) => {
           acrescentaCorpoDoTexto(linhaDeImpressão);
         }else{
           console.log("Erro: Tipos diferentes para atribuição\n");
+          flagError = true;
           //console.log('token1:', case19token1, '\ntoken2:', case19token2, '\ntoken3:', case19token3);
         }
       } else{
         console.log("Erro Semântico: Variável não declarada!\n");
+        flagError = true;
       }
       break;
 
@@ -762,6 +761,7 @@ const analisadorSemantico = (regraGramatical) => {
         acrescentaCorpoDoTexto(linhaDeImpressão);
       } else{
         console.log("Erro: Operandos com tipos incompatíveis");
+        flagError = true;
       }
 
       
@@ -850,6 +850,7 @@ const analisadorSemantico = (regraGramatical) => {
 
       } else{
         console.log(`Erro: Operandos com tipos incompatíveis na linha ${linha} e coluna ${linha} `);
+        flagError = true;
       }
       break;
       
@@ -1024,16 +1025,14 @@ const imprimeCorpoDoTextoNoarquivo = () => {
 
 
 const imprimeArquivo = () => {
-  inicializaArquivo();
-
-  for (var i = 0;i < variaveisTemporarias.length; i++)
-    escreveNoArquivo(variaveisTemporarias[i]);
-
-  escreveNoArquivo("\t/*------------------------------*/\n");
-  
-  imprimeCorpoDoTextoNoarquivo();
-  
-  escreveNoArquivo("}\n");
+  if (!flagError){
+    inicializaArquivo();
+    for (var i = 0;i < variaveisTemporarias.length; i++)
+      escreveNoArquivo(variaveisTemporarias[i]);
+    escreveNoArquivo("\t/*------------------------------*/\n");
+    imprimeCorpoDoTextoNoarquivo();
+    escreveNoArquivo("}\n");
+  }
 }
 
 imprimeArquivo();
